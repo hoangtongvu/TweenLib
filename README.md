@@ -103,7 +103,7 @@ foreach (var (transformRef, moveStateRef, tweenDataRef, canTweenTag, moveStateCh
 }
 ```
 
-**Note**: Currently, **TweenLib** only support control tween life time via `BaseSpeed`.
+**Note**: Currently, **TweenLib** only support controling tween life time via `BaseSpeed`.
 
 ## Known issues
 
