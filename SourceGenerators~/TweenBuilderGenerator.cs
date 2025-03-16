@@ -104,6 +104,7 @@ namespace TweenLibSourceGenerator
             string sourceCode = $@"
 using System;
 using Unity.Entities;
+using TweenLib;
 
 namespace {tweenerNamespace}
 {{
