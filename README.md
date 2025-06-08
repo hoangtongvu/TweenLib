@@ -11,15 +11,15 @@ To install, paste the following URL into Unity's **Package Manager**:
 1. Open **Package Manager**.
 2. Click the **+** button.
 3. Select **"Add package from git URL..."**.
-4. Enter: `https://github.com/hoangtongvu/com.darksun.tweenlib.git`
+4. Enter: `https://github.com/hoangtongvu/com.darksun.tweenlib.git?path=/Assets/Scripts/com.darksun.tweenlib`
 
 ## How to use
 
 ### 1. Use predefined Tweener or declare your own
 
-TweenLib provides several ready-to-use Tweeners in the [StandardTweeners](StandardTweeners) assembly:
-- [TransformPositionTweener](StandardTweeners/TransformPositionTweener.cs)
-- [TransformRotationTweener](StandardTweeners/TransformRotationTweener.cs)
+TweenLib provides several ready-to-use Tweeners in the [StandardTweeners](Assets/Scripts/com.darksun.tweenlib/StandardTweeners) assembly:
+- [TransformPositionTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/TransformPositionTweener.cs)
+- [TransformRotationTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/TransformRotationTweener.cs)
 - *(More coming soon...)*
 
 Or, you can create your own Tweener with custom logic:
@@ -28,7 +28,7 @@ Or, you can create your own Tweener with custom logic:
     - `Component` is the `IComponentData` that you want to tween on.
     - `Target` is the tween destination value.
 
-**A Tweener example** ([TransformPositionTweener](StandardTweeners/TransformPositionTweener.cs)):
+**A Tweener example** ([TransformPositionTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/TransformPositionTweener.cs)):
 ```cs
 [BurstCompile]
 public partial struct TransformPositionTweener : ITweener<LocalTransform, float3>
