@@ -10,7 +10,7 @@ namespace Systems.Initialization
 {
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     [BurstCompile]
-    public partial struct CubeShakeSystem : ISystem
+    public partial struct CubeShakeCreateSystem : ISystem
     {
         [BurstCompile]
         public void OnCreate(ref SystemState state)

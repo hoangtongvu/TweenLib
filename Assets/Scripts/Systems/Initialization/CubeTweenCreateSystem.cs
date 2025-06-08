@@ -1,6 +1,4 @@
-using TweenLib.ShakeTween;
 using TweenLib.StandardTweeners;
-using TweenLib.Timer;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -10,7 +8,7 @@ namespace Systems.Initialization
 {
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     [BurstCompile]
-    public partial struct CubeTweenSystem : ISystem
+    public partial struct CubeTweenCreateSystem : ISystem
     {
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -36,7 +34,7 @@ namespace Systems.Initialization
                     , RefRW<TransformPositionTweener_TweenData>>()
                     .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState))
             {
-                UnityEngine.Debug.Log("TWEEN");
+                UnityEngine.Debug.Log("Create TWEEN");
 
                 var pos = transformRef.ValueRO.Position;
                 pos.x += 3f;
