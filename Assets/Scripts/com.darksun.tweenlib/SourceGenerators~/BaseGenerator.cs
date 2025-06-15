@@ -241,8 +241,7 @@ namespace TweenLib.Systems
             this.canTweenTagTypeHandle.Update(ref state);
             this.tweenDataTypeHandle.Update(ref state);
 
-            state.EntityManager.CompleteDependencyBeforeRW<TimerList>();
-            state.EntityManager.CompleteDependencyBeforeRW<TimerIdPool>();
+            TimerHelper.CompleteDependencesBeforeRW(state.EntityManager);
 
             state.Dependency = new TweenIJC
             {{

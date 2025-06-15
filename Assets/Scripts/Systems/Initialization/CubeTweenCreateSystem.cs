@@ -1,5 +1,6 @@
 using TweenLib.StandardTweeners;
 using TweenLib.Timer.Data;
+using TweenLib.Timer.Logic;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -28,8 +29,7 @@ namespace Systems.Initialization
         {
             if (!Input.GetKeyDown(KeyCode.Space)) return;
 
-            state.EntityManager.CompleteDependencyBeforeRW<TimerList>();
-            state.EntityManager.CompleteDependencyBeforeRW<TimerIdPool>();
+            TimerHelper.CompleteDependencesBeforeRW(state.EntityManager);
 
             var timerList = SystemAPI.GetSingleton<TimerList>();
             var timerIdPool = SystemAPI.GetSingleton<TimerIdPool>();

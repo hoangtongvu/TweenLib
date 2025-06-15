@@ -1,6 +1,7 @@
 using TweenLib.ShakeTween.Data;
 using TweenLib.ShakeTween.Logic;
 using TweenLib.Timer.Data;
+using TweenLib.Timer.Logic;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -29,10 +30,11 @@ namespace Systems.Initialization
         {
             if (!Input.GetKeyDown(KeyCode.F)) return;
 
-            state.EntityManager.CompleteDependencyBeforeRW<TimerList>();
-            state.EntityManager.CompleteDependencyBeforeRW<TimerIdPool>();
-            state.EntityManager.CompleteDependencyBeforeRW<ShakeDataList>();
-            state.EntityManager.CompleteDependencyBeforeRW<ShakeDataIdPool>();
+            var em = state.EntityManager;
+
+            TimerHelper.CompleteDependencesBeforeRW(in em);
+            em.CompleteDependencyBeforeRW<ShakeDataList>();
+            em.CompleteDependencyBeforeRW<ShakeDataIdPool>();
 
             var timerList = SystemAPI.GetSingleton<TimerList>();
             var timerIdPool = SystemAPI.GetSingleton<TimerIdPool>();
