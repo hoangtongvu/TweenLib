@@ -243,9 +243,12 @@ namespace TweenLib.Systems
 
             TimerHelper.CompleteDependencesBeforeRW(state.EntityManager);
 
+            var tweener = new global::{tweenerIdentifier}();
+
             state.Dependency = new TweenIJC
             {{
                 DeltaTime = state.WorldUnmanaged.Time.DeltaTime,
+                Tweener = tweener,
                 TimerList = this.timerQuery.GetSingleton<TimerList>(),
                 TimerIdPool = this.timerQuery.GetSingleton<TimerIdPool>(),
                 ComponentTypeHandle = this.componentTypeHandle,
@@ -260,6 +263,7 @@ namespace TweenLib.Systems
         public struct TweenIJC : IJobChunk
         {{
             [Unity.Collections.ReadOnly] public float DeltaTime;
+            [Unity.Collections.ReadOnly] public global::{tweenerIdentifier} Tweener;
             [NativeDisableParallelForRestriction] public TimerList TimerList;
             [NativeDisableParallelForRestriction] public TimerIdPool TimerIdPool;
 
@@ -282,8 +286,6 @@ namespace TweenLib.Systems
                     ref var tweenData = ref tweenDataArray.ElementAt(i);
                     var canTweenTag = canTweenTagEnabledMask_RW.GetEnabledRefRW<{canTweenTagIdentifier}>(i);
 
-                    var tweener = new global::{tweenerIdentifier}();
-
                     var timeCounterSeconds = this.TimerList.Value[tweenData.TimerId];
                     if (timeCounterSeconds.Counter >= tweenData.DurationSeconds)
                     {{
@@ -292,7 +294,7 @@ namespace TweenLib.Systems
                         canTweenTag.ValueRW = false;
                         
                         // Finalize the component on tween stop
-                        tweener.Tween(
+                        this.Tweener.Tween(
                             ref component
                             , 1f
                             , tweenData.EasingType
@@ -306,11 +308,11 @@ namespace TweenLib.Systems
                     {{
                         tweenData.StartValue = tweenData.UseCustomStartValue
                             ? tweenData.StartValue
-                            : tweener.GetDefaultStartValue(in component);
+                            : this.Tweener.GetDefaultStartValue(in component);
                         tweenData.StartValueInitialized = true;
                     }}
     
-                    tweener.Tween(
+                    this.Tweener.Tween(
                         ref component
                         , timeCounterSeconds.GetNormalizedTime(tweenData.DurationSeconds)
                         , tweenData.EasingType
