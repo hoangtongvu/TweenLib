@@ -45,6 +45,10 @@ namespace TweenLib.Timer.Logic
             timerIdPool.Value.Enqueue(id);
         }
 
+        //[BurstCompile]
+        public static float GetNormalizedTime(in this TimerSeconds timerSeconds, in float duration)
+            => timerSeconds.Counter / duration;
+
     }
 
 }

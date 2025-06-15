@@ -6,9 +6,10 @@ namespace TweenLib
         where Component : unmanaged, IComponentData
         where Target : unmanaged
     {
-        void Tween(ref Component componentData, in float baseSpeed, in Target target);
+        Target GetDefaultStartValue(in Component componentData);
 
-        bool CanStop(in Component componentData, in float lifeTimeSecond, in float baseSpeed, in Target target);
+        void Tween(ref Component componentData, in float normalizedTime, EasingType easingType, in Target startValue, in Target target);
+
     }
 
 }

@@ -103,40 +103,73 @@ namespace TweenLibSourceGenerator
 
             string sourceCode = $@"
 using System;
+using Unity.Burst;
 using Unity.Entities;
 using TweenLib;
+using TweenLib.Timer.Data;
+using TweenLib.Timer.Logic;
 
 namespace {tweenerNamespace}
 {{
     public partial struct {tweenerName}
     {{
-        [Unity.Burst.BurstCompile]
+        [BurstCompile]
         public struct TweenBuilder : ITweenBuilder<{targetIdentifier}, {canTweenTagIdentifier}, {tweenDataIdentifier}>
         {{
-            private float baseSpeed;
+            private float durationSeconds;
             private {targetIdentifier} target;
 
-            public static TweenBuilder Create() => new();
+            private bool useCustomStartValue;
+            private {targetIdentifier} startValue;
 
-            [Unity.Burst.BurstCompile]
-            public TweenBuilder WithBaseSpeed(in float baseSpeed)
-            {{
-                this.baseSpeed = baseSpeed;
-                return this;
-            }}
+            private EasingType easingType;
 
-            [Unity.Burst.BurstCompile]
-            public TweenBuilder WithTarget(in {targetIdentifier} target)
+            public static TweenBuilder Create(float durationSeconds, in {targetIdentifier} target) => new(durationSeconds, in target);
+
+            public TweenBuilder(float durationSeconds, in {targetIdentifier} target)
             {{
+                this.durationSeconds = durationSeconds;
                 this.target = target;
+                
+                this.useCustomStartValue = false;
+                this.startValue = default;
+                this.easingType = EasingType.Linear;
+                this.useCustomStartValue = false;
+            }}
+
+            [BurstCompile]
+            public TweenBuilder WithStartValue(in {targetIdentifier} startValue)
+            {{
+	            this.startValue = startValue;
+	            this.useCustomStartValue = true;
                 return this;
             }}
 
-            [Unity.Burst.BurstCompile]
-            public void Build(ref {tweenDataIdentifier} tweenData, in EnabledRefRW<{canTweenTagIdentifier}> canTweenTag)
+            [BurstCompile]
+            public TweenBuilder WithEase(EasingType easingType)
             {{
-                tweenData.BaseSpeed = this.baseSpeed;
+	            this.easingType = easingType;
+                return this;
+            }}
+
+            [BurstCompile]
+            public void Build(
+                ref TimerList timerList
+                , in TimerIdPool timerIdPool
+                , ref {tweenDataIdentifier} tweenData
+                , in EnabledRefRW<{canTweenTagIdentifier}> canTweenTag)
+            {{
+                tweenData.DurationSeconds = this.durationSeconds;
                 tweenData.Target = this.target;
+
+                tweenData.StartValueInitialized = false;
+                tweenData.UseCustomStartValue = this.useCustomStartValue;
+                tweenData.StartValue = this.startValue;
+
+                tweenData.EasingType = this.easingType;
+
+                tweenData.TimerId = TimerHelper.AddTimer(ref timerList, in timerIdPool);
+
                 canTweenTag.ValueRW = true;
 
             }}
@@ -147,7 +180,7 @@ namespace {tweenerNamespace}
 }}
 ";
 
-            context.AddSource($"{tweenerName}.g.cs", sourceCode);
+            context.AddSource($"{tweenerName}.TweenBuilder.g.cs", sourceCode);
 
         }
 

@@ -44,9 +44,9 @@ namespace TweenLibSourceGenerator
                     this.GetNameAndNamespaceOfGenericArgument(semanticModel, genericArguments[1]
                         , out string targetTypeName, out string targetNamespace);
 
-                    this.GeneratePartialPartTweener(context, tweenerName, tweenerNamespace);
                     this.GenerateCanTweenTag(context, tweenerName, componentNamespace);
                     this.GenerateTweenData(context, tweenerName, targetTypeName, targetNamespace, componentNamespace);
+                    this.GenerateTweenComponentsBakingHelper(context, tweenerName, tweenerNamespace, componentNamespace);
                     this.GenerateTweenSystem(context, tweenerName, tweenerNamespace, componentTypeName, componentNamespace);
 
                 }
@@ -95,27 +95,6 @@ namespace TweenLibSourceGenerator
 
         }
 
-        private void GeneratePartialPartTweener(
-            GeneratorExecutionContext context
-            , string tweenerName
-            , string tweenerNamespace)
-        {
-            string sourceCode = $@"
-using System;
-namespace {tweenerNamespace}
-{{
-    public partial struct {tweenerName}
-    {{
-        [Unity.Collections.ReadOnly]
-        public float DeltaTime;
-    }}  
-}}
-";
-
-            context.AddSource($"{tweenerName}.g.cs", sourceCode);
-
-        }
-
         private void GenerateCanTweenTag(
             GeneratorExecutionContext context
             , string tweenerName
@@ -144,18 +123,55 @@ namespace {componentNamespace}
             string fullIdentifier = $"{targetNamespace}.{targetTypeName}";
 
             string sourceCode = $@"
+using TweenLib;
+
 namespace {componentNamespace}
 {{
     public struct {tweenerName}_TweenData : Unity.Entities.IComponentData
     {{
-        public float LifeTimeSecond;
-        public float BaseSpeed;
+        public int TimerId;
+        public float DurationSeconds;
         public {fullIdentifier} Target;
+
+        public bool StartValueInitialized;
+        public bool UseCustomStartValue;
+        public {fullIdentifier} StartValue;
+
+        public EasingType EasingType;
     }}
 }}
 ";
 
             context.AddSource($"{tweenerName}_TweenData.cs", sourceCode);
+
+        }
+
+        private void GenerateTweenComponentsBakingHelper(
+            GeneratorExecutionContext context
+            , string tweenerName
+            , string tweenerNamespace
+            , string componentNamespace)
+        {
+            string sourceCode = $@"
+using Unity.Entities;
+using {componentNamespace};
+using TweenLib;
+
+namespace {tweenerNamespace}
+{{
+    public partial struct {tweenerName}
+    {{
+        public static void AddTweenComponents(IBaker baker, Entity entity)
+        {{
+            baker.AddComponent<Can_{tweenerName}_TweenTag>(entity);
+            baker.SetComponentEnabled<Can_{tweenerName}_TweenTag>(entity, false);
+            baker.AddComponent<{tweenerName}_TweenData>(entity);
+        }}
+    }}
+}}
+";
+
+            context.AddSource($"{tweenerName}.ComponentsBakingHelper.cs", sourceCode);
 
         }
 
@@ -175,51 +191,64 @@ namespace {componentNamespace}
 
             string sourceCode = $@"
 using Unity.Entities;
+using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using TweenLib.Utilities.Extensions;
+using TweenLib.Timer.Data;
+using TweenLib.Timer.Logic;
 
 namespace TweenLib.Systems
 {{
     [UpdateInGroup(typeof(TweenLib.TweenSystemGroup))]
-    [Unity.Burst.BurstCompile]
+    [BurstCompile]
     public partial struct {systemName} : ISystem
     {{
         private EntityQuery query;
+        private EntityQuery timerQuery;
         private ComponentTypeHandle<{componentIdentifier}> componentTypeHandle;
         private ComponentTypeHandle<{canTweenTagIdentifier}> canTweenTagTypeHandle;
         private ComponentTypeHandle<{tweenDataIdentifier}> tweenDataTypeHandle;
 
-        [Unity.Burst.BurstCompile]
+        [BurstCompile]
         public void OnCreate(ref Unity.Entities.SystemState state)
         {{
-            EntityQueryBuilder queryBuilder = new EntityQueryBuilder(Allocator.Temp);
-
+            var queryBuilder = new EntityQueryBuilder(Allocator.Temp);
             this.query = queryBuilder
                 .WithAllRW<{componentIdentifier}>()
                 .WithAllRW<{tweenDataIdentifier}>()
                 .WithAll<{canTweenTagIdentifier}>()
                 .Build(ref state);
 
-            queryBuilder.Dispose();
+            queryBuilder = new EntityQueryBuilder(Allocator.Temp);
+            this.timerQuery = queryBuilder
+                .WithAllRW<TimerList>()
+                .WithAllRW<TimerIdPool>()
+                .Build(ref state);
 
             this.componentTypeHandle = state.GetComponentTypeHandle<{componentIdentifier}>(false);
             this.canTweenTagTypeHandle = state.GetComponentTypeHandle<{canTweenTagIdentifier}>(false);
             this.tweenDataTypeHandle = state.GetComponentTypeHandle<{tweenDataIdentifier}>(false);
 
             state.RequireForUpdate(this.query);
+            state.RequireForUpdate(this.timerQuery);
         }}
 
-        [Unity.Burst.BurstCompile]
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {{
             this.componentTypeHandle.Update(ref state);
             this.canTweenTagTypeHandle.Update(ref state);
             this.tweenDataTypeHandle.Update(ref state);
 
+            state.EntityManager.CompleteDependencyBeforeRW<TimerList>();
+            state.EntityManager.CompleteDependencyBeforeRW<TimerIdPool>();
+
             state.Dependency = new TweenIJC
             {{
                 DeltaTime = state.WorldUnmanaged.Time.DeltaTime,
+                TimerList = this.timerQuery.GetSingleton<TimerList>(),
+                TimerIdPool = this.timerQuery.GetSingleton<TimerIdPool>(),
                 ComponentTypeHandle = this.componentTypeHandle,
                 CanTweenTagTypeHandle = this.canTweenTagTypeHandle,
                 TweenDataTypeHandle = this.tweenDataTypeHandle,
@@ -228,15 +257,18 @@ namespace TweenLib.Systems
         }}
 
  
-        [Unity.Burst.BurstCompile]
+        [BurstCompile]
         public struct TweenIJC : IJobChunk
         {{
             [Unity.Collections.ReadOnly] public float DeltaTime;
+            [NativeDisableParallelForRestriction] public TimerList TimerList;
+            [NativeDisableParallelForRestriction] public TimerIdPool TimerIdPool;
+
             public ComponentTypeHandle<{componentIdentifier}> ComponentTypeHandle;
             public ComponentTypeHandle<{canTweenTagIdentifier}> CanTweenTagTypeHandle;
             public ComponentTypeHandle<{tweenDataIdentifier}> TweenDataTypeHandle;
 
-            [Unity.Burst.BurstCompile]
+            [BurstCompile]
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {{
                 var canTweenTagEnabledMask_RW = chunk.GetEnabledMask(ref this.CanTweenTagTypeHandle);
@@ -251,20 +283,30 @@ namespace TweenLib.Systems
                     ref var tweenData = ref tweenDataArray.ElementAt(i);
                     var canTweenTag = canTweenTagEnabledMask_RW.GetEnabledRefRW<{canTweenTagIdentifier}>(i);
 
-                    var tweener = new global::{tweenerIdentifier}
-                    {{
-                        DeltaTime = this.DeltaTime,
-                    }};
+                    var tweener = new global::{tweenerIdentifier}();
 
-                    if (tweener.CanStop(in component, in tweenData.LifeTimeSecond, in tweenData.BaseSpeed, in tweenData.Target))
+                    if (!tweenData.StartValueInitialized)
                     {{
+                        tweenData.StartValue = tweenData.UseCustomStartValue
+                            ? tweenData.StartValue
+                            : tweener.GetDefaultStartValue(in component);
+                        tweenData.StartValueInitialized = true;
+                    }}
+
+                    var timeCounterSeconds = this.TimerList.Value[tweenData.TimerId];
+                    if (timeCounterSeconds.Counter >= tweenData.DurationSeconds)
+                    {{
+                        TimerHelper.RemoveTimer(in this.TimerList, in this.TimerIdPool, in tweenData.TimerId);
                         canTweenTag.ValueRW = false;
-                        tweenData.LifeTimeSecond = 0f;
                         continue;
                     }}
 
-                    tweener.Tween(ref component, in tweenData.BaseSpeed, in tweenData.Target);
-                    tweenData.LifeTimeSecond += this.DeltaTime;
+                    tweener.Tween(
+                        ref component
+                        , timeCounterSeconds.GetNormalizedTime(tweenData.DurationSeconds)
+                        , tweenData.EasingType
+                        , in tweenData.StartValue
+                        , in tweenData.Target);
 
                 }}
 

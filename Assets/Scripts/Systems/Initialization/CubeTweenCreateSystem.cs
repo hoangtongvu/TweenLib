@@ -1,4 +1,5 @@
 using TweenLib.StandardTweeners;
+using TweenLib.Timer.Data;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -27,6 +28,12 @@ namespace Systems.Initialization
         {
             if (!Input.GetKeyDown(KeyCode.Space)) return;
 
+            state.EntityManager.CompleteDependencyBeforeRW<TimerList>();
+            state.EntityManager.CompleteDependencyBeforeRW<TimerIdPool>();
+
+            var timerList = SystemAPI.GetSingleton<TimerList>();
+            var timerIdPool = SystemAPI.GetSingleton<TimerIdPool>();
+
             foreach (var (transformRef, canTweenTag, tweenDataRef) in
                 SystemAPI.Query<
                     RefRO<LocalTransform>
@@ -39,10 +46,9 @@ namespace Systems.Initialization
                 var pos = transformRef.ValueRO.Position;
                 pos.x += 3f;
                 
-                TransformPositionTweener.TweenBuilder.Create()
-                    .WithBaseSpeed(5f)
-                    .WithTarget(pos)
-                    .Build(ref tweenDataRef.ValueRW, canTweenTag);
+                TransformPositionTweener.TweenBuilder.Create(0.8f, pos)
+                    .WithEase(TweenLib.EasingType.EaseOutBounce)
+                    .Build(ref timerList, in timerIdPool, ref tweenDataRef.ValueRW, canTweenTag);
             }
 
         }

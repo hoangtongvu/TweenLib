@@ -1,6 +1,6 @@
 ﻿using TweenLib.ShakeTween.Data;
+using TweenLib.StandardTweeners;
 using Unity.Entities;
-using Unity.Transforms;
 using UnityEngine;
 
 namespace Authoring
@@ -13,9 +13,7 @@ namespace Authoring
             {
                 Entity entity = GetEntity(authoring, TransformUsageFlags.Dynamic);
 
-                AddComponent<Can_TransformPositionTweener_TweenTag>(entity);
-                SetComponentEnabled<Can_TransformPositionTweener_TweenTag>(entity, false);
-                AddComponent<TransformPositionTweener_TweenData>(entity);
+                TransformPositionTweener.AddTweenComponents(this, entity);
 
                 AddComponent(entity, ShakeDataIdHolder.Invalid);
 

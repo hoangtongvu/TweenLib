@@ -8,16 +8,15 @@ namespace TweenLib.StandardTweeners
     public partial struct TransformRotationTweener : ITweener<LocalTransform, float4>
     {
         [BurstCompile]
-        public bool CanStop(in LocalTransform componentData, in float lifeTimeSecond, in float baseSpeed, in float4 target)
+        public float4 GetDefaultStartValue(in LocalTransform componentData)
         {
-            return math.all(math.abs(target - componentData.Rotation.value) < new float4(Configs.Epsilon));
+            return componentData.Rotation.value;
         }
 
         [BurstCompile]
-        public void Tween(ref LocalTransform componentData, in float baseSpeed, in float4 target)
+        public void Tween(ref LocalTransform componentData, in float normalizedTime, EasingType easingType, in float4 startValue, in float4 target)
         {
-            componentData.Rotation =
-                math.lerp(componentData.Rotation.value, target, baseSpeed * this.DeltaTime);
+            TweenHelper.Float4Tween(in normalizedTime, easingType, in startValue, in target, out componentData.Rotation.value);
         }
 
     }
