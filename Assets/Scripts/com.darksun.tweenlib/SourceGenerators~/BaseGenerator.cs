@@ -284,6 +284,24 @@ namespace TweenLib.Systems
 
                     var tweener = new global::{tweenerIdentifier}();
 
+                    var timeCounterSeconds = this.TimerList.Value[tweenData.TimerId];
+                    if (timeCounterSeconds.Counter >= tweenData.DurationSeconds)
+                    {{
+                        // Stop tweening
+                        TimerHelper.RemoveTimer(in this.TimerList, in this.TimerIdPool, in tweenData.TimerId);
+                        canTweenTag.ValueRW = false;
+                        
+                        // Finalize the component on tween stop
+                        tweener.Tween(
+                            ref component
+                            , 1f
+                            , tweenData.EasingType
+                            , in tweenData.StartValue
+                            , in tweenData.Target);
+
+                        continue;
+                    }}
+
                     if (!tweenData.StartValueInitialized)
                     {{
                         tweenData.StartValue = tweenData.UseCustomStartValue
@@ -291,15 +309,7 @@ namespace TweenLib.Systems
                             : tweener.GetDefaultStartValue(in component);
                         tweenData.StartValueInitialized = true;
                     }}
-
-                    var timeCounterSeconds = this.TimerList.Value[tweenData.TimerId];
-                    if (timeCounterSeconds.Counter >= tweenData.DurationSeconds)
-                    {{
-                        TimerHelper.RemoveTimer(in this.TimerList, in this.TimerIdPool, in tweenData.TimerId);
-                        canTweenTag.ValueRW = false;
-                        continue;
-                    }}
-
+    
                     tweener.Tween(
                         ref component
                         , timeCounterSeconds.GetNormalizedTime(tweenData.DurationSeconds)
