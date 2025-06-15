@@ -1,3 +1,4 @@
+using TweenLib.Commons;
 using Unity.Collections;
 using Unity.Entities;
 
@@ -11,7 +12,7 @@ namespace TweenLib.Timer.Data
     [System.Serializable]
     public struct TimerSeconds
     {
-        public bool IsEnabled;
+        public BoolByte IsEnabled;
         public float Counter;
         public static readonly TimerSeconds Default = new()
         {
