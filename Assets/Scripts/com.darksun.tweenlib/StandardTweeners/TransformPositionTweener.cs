@@ -7,7 +7,6 @@ namespace TweenLib.StandardTweeners
     [BurstCompile]
     public partial struct TransformPositionTweener : ITweener<LocalTransform, float3>
     {
-        [BurstCompile]
         public float3 GetDefaultStartValue(in LocalTransform componentData)
         {
             return componentData.Position;
