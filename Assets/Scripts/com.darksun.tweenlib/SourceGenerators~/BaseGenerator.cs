@@ -16,14 +16,14 @@ namespace TweenLibSourceGenerator
 
         public void Execute(GeneratorExecutionContext context)
         {
-            const string LOG_FILE_PATH = "C:\\Users\\Administrator\\Desktop\\SourceGenErrors.txt";
+            const string ERROR_LOG_FILE_PATH = "C:\\Users\\Administrator\\Desktop\\SourceGenErrors.txt";
+            const string DEBUG_LOG_FILE_PATH = "C:\\Users\\Administrator\\Desktop\\SourceGenDebugLogs.txt";
+            string errorDebugContent = "";
 
             try
             {
                 if (!(context.SyntaxReceiver is ITweenerSyntaxReceiver receiver))
                     return;
-
-                string debugContent = "";
 
                 var compilation = context.Compilation;
 
@@ -49,27 +49,13 @@ namespace TweenLibSourceGenerator
                     this.GenerateTweenData(context, tweenerName, targetTypeName, targetNamespace, componentNamespace);
                     this.GenerateTweenSystem(context, tweenerName, tweenerNamespace, componentTypeName, componentNamespace);
 
-                    debugContent += $"[{tweenerName}-{tweenerNamespace}], [{componentTypeName}-{componentNamespace}], [{targetTypeName}-{targetNamespace}]";
-
                 }
-
-                string sourceCode = $@"
-using System;
-namespace SomeNamespace
-{{
-    public static class Debugger
-    {{
-        public static string DebugContent = ""Error:[{debugContent}]"";
-    }}  
-}}
-";
-
-                context.AddSource("Debugger.g.cs", sourceCode);
 
             }
             catch (Exception e)
             {
-                File.AppendAllText(LOG_FILE_PATH, $"Source generator error:\n{e}\n");
+                File.AppendAllText(ERROR_LOG_FILE_PATH, $"Source generator error:\n{e}\n");
+                File.AppendAllText(ERROR_LOG_FILE_PATH, $"Debug contents:\n{errorDebugContent}\n");
             }
             
         }
