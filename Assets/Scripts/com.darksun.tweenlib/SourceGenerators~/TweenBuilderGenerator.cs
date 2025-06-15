@@ -116,39 +116,33 @@ namespace {tweenerNamespace}
         [BurstCompile]
         public struct TweenBuilder : ITweenBuilder<{targetIdentifier}, {canTweenTagIdentifier}, {tweenDataIdentifier}>
         {{
-            private float durationSeconds;
-            private {targetIdentifier} target;
-
-            private bool useCustomStartValue;
-            private {targetIdentifier} startValue;
-
-            private EasingType easingType;
+            private {tweenDataIdentifier} tweenData;
 
             public static TweenBuilder Create(float durationSeconds, in {targetIdentifier} target) => new(durationSeconds, in target);
 
             public TweenBuilder(float durationSeconds, in {targetIdentifier} target)
             {{
-                this.durationSeconds = durationSeconds;
-                this.target = target;
+                this.tweenData = new()
+                {{
+                    DurationSeconds = durationSeconds,
+                    Target = target,
+                    EasingType = EasingType.Linear,
+                }};
                 
-                this.useCustomStartValue = false;
-                this.startValue = default;
-                this.easingType = EasingType.Linear;
-                this.useCustomStartValue = false;
             }}
 
             [BurstCompile]
             public TweenBuilder WithStartValue(in {targetIdentifier} startValue)
             {{
-	            this.startValue = startValue;
-	            this.useCustomStartValue = true;
+	            this.tweenData.StartValue = startValue;
+	            this.tweenData.UseCustomStartValue = true;
                 return this;
             }}
 
             [BurstCompile]
             public TweenBuilder WithEase(EasingType easingType)
             {{
-	            this.easingType = easingType;
+	            this.tweenData.EasingType = easingType;
                 return this;
             }}
 
@@ -159,24 +153,16 @@ namespace {tweenerNamespace}
                 , ref {tweenDataIdentifier} tweenData
                 , in EnabledRefRW<{canTweenTagIdentifier}> canTweenTag)
             {{
-                tweenData.DurationSeconds = this.durationSeconds;
-                tweenData.Target = this.target;
+                this.tweenData.TimerId = TimerHelper.AddTimer(ref timerList, in timerIdPool);
 
-                tweenData.StartValueInitialized = false;
-                tweenData.UseCustomStartValue = this.useCustomStartValue;
-                tweenData.StartValue = this.startValue;
-
-                tweenData.EasingType = this.easingType;
-
-                tweenData.TimerId = TimerHelper.AddTimer(ref timerList, in timerIdPool);
-
+                tweenData = this.tweenData;
                 canTweenTag.ValueRW = true;
-
             }}
 
-        }}            
+        }}
 
-    }}  
+    }}
+
 }}
 ";
 
