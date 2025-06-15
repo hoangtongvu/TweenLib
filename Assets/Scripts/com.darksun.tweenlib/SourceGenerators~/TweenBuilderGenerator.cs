@@ -27,7 +27,7 @@ namespace TweenLibSourceGenerator
 
                 foreach (var structDeclaration in receiver.Syntaxes)
                 {
-                    string tweenerNamespace = this.GetNamespace(structDeclaration);
+                    string tweenerNamespace = Utilities.GetNamespace(structDeclaration);
                     string tweenerName = structDeclaration.Identifier.ToString();
 
                     var genericArguments = ((GenericNameSyntax)structDeclaration.BaseList.Types[0].Type) // BUG: This only works if tweener implement only one interface
@@ -35,12 +35,11 @@ namespace TweenLibSourceGenerator
 
                     SemanticModel semanticModel = compilation.GetSemanticModel(genericArguments[0].SyntaxTree);
 
-                    this.GetNameAndNamespaceOfGenericArgument(semanticModel, genericArguments[0]
+                    Utilities.GetNameAndNamespaceOfGenericArgument(semanticModel, genericArguments[0]
                         , out string componentTypeName, out string componentNamespace);
 
-                    this.GetNameAndNamespaceOfGenericArgument(semanticModel, genericArguments[1]
+                    Utilities.GetNameAndNamespaceOfGenericArgument(semanticModel, genericArguments[1]
                         , out string targetTypeName, out string targetNamespace);
-
 
                     this.GenerateTweenBuilder(context, tweenerName, tweenerNamespace, targetTypeName, targetNamespace, componentNamespace);
 
@@ -52,41 +51,6 @@ namespace TweenLibSourceGenerator
                 File.AppendAllText(LOG_FILE_PATH, $"Source generator error:\n{e}\n");
             }
             
-        }
-
-        private string GetNamespace(SyntaxNode syntaxNode)
-        {
-            SyntaxNode parent = syntaxNode.Parent;
-
-            while (parent != null)
-            {
-                if (parent is NamespaceDeclarationSyntax namespaceDeclaration)
-                    return namespaceDeclaration.Name.ToString();
-
-                parent = parent.Parent;
-
-            }
-
-            return null;
-
-        }
-
-        private void GetNameAndNamespaceOfGenericArgument(
-            SemanticModel semanticModel
-            , ExpressionSyntax expressionSyntax
-            , out string typeName
-            , out string namespaceName)
-        {
-            ITypeSymbol typeSymbol = semanticModel.GetTypeInfo(expressionSyntax).Type;
-            if (typeSymbol != null)
-            {
-                typeName = typeSymbol.Name;
-                namespaceName = typeSymbol.ContainingNamespace?.ToDisplayString() ?? "(NoNamespace)";
-                return;
-            }
-
-            throw new System.Exception($"Can not resolve {nameof(ITypeSymbol)} for Generic argument");
-
         }
 
         private void GenerateTweenBuilder(
