@@ -70,6 +70,7 @@ using System;
 using Unity.Burst;
 using Unity.Entities;
 using TweenLib;
+using TweenLib.Utilities;
 using TweenLib.Timer.Data;
 using TweenLib.Timer.Logic;
 

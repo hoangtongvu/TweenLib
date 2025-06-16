@@ -1,3 +1,4 @@
+using TweenLib.Utilities;
 using Unity.Entities;
 
 namespace TweenLib

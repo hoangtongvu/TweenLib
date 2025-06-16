@@ -92,6 +92,7 @@ namespace {componentNamespace}
 
             string sourceCode = $@"
 using TweenLib;
+using TweenLib.Utilities;
 
 namespace {componentNamespace}
 {{

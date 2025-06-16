@@ -1,7 +1,7 @@
 using Unity.Burst;
 using Unity.Mathematics;
 
-namespace TweenLib
+namespace TweenLib.Utilities.Helpers
 {
     [BurstCompile]
     public static class TweenHelper

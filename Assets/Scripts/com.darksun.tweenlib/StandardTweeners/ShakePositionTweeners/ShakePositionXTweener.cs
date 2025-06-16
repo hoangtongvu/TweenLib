@@ -1,4 +1,5 @@
-using TweenLib.Commons;
+using TweenLib.Utilities;
+using TweenLib.Utilities.Helpers;
 using Unity.Burst;
 using Unity.Mathematics;
 using Unity.Transforms;

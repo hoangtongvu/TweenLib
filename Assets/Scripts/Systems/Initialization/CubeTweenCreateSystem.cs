@@ -1,6 +1,7 @@
 using TweenLib.StandardTweeners;
 using TweenLib.Timer.Data;
 using TweenLib.Timer.Logic;
+using TweenLib.Utilities;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -47,7 +48,7 @@ namespace Systems.Initialization
                 pos.x += 3f;
                 
                 TransformPositionTweener.TweenBuilder.Create(0.8f, pos)
-                    .WithEase(TweenLib.EasingType.EaseOutBounce)
+                    .WithEase(EasingType.EaseOutBounce)
                     .Build(ref timerList, in timerIdPool, ref tweenDataRef.ValueRW, canTweenTag);
             }
 
