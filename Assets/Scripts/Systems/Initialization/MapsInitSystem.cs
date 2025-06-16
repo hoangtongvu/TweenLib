@@ -1,4 +1,3 @@
-using TweenLib.ShakeTween.Data;
 using TweenLib.Timer.Data;
 using Unity.Burst;
 using Unity.Collections;
@@ -22,16 +21,6 @@ namespace Systems.Initialization
             });
 
             em.AddComponentData(entity, new TimerIdPool
-            {
-                Value = new(Allocator.Persistent),
-            });
-
-            em.AddComponentData(entity, new ShakeDataList
-            {
-                Value = new(100, Allocator.Persistent),
-            });
-
-            em.AddComponentData(entity, new ShakeDataIdPool
             {
                 Value = new(Allocator.Persistent),
             });

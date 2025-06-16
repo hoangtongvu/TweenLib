@@ -1,5 +1,5 @@
-using TweenLib.ShakeTween.Data;
-using TweenLib.ShakeTween.Logic;
+using Components;
+using TweenLib.StandardTweeners.ShakePositionTweeners;
 using TweenLib.Timer.Data;
 using TweenLib.Timer.Logic;
 using Unity.Burst;
@@ -7,11 +7,11 @@ using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace Systems.Initialization
+namespace Systems.Initialization.ShakeCreateSystems
 {
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     [BurstCompile]
-    public partial struct CubeShakeCreateSystem : ISystem
+    public partial struct CubeShakePositionXCreateSystem : ISystem
     {
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -30,28 +30,32 @@ namespace Systems.Initialization
         {
             if (!Input.GetKeyDown(KeyCode.F)) return;
 
+            var shakePositionConfigs = SystemAPI.GetSingleton<ShakePositionConfigs>();
+            if (shakePositionConfigs.ShakePositionType != ShakePositionType.X) return;
+
             var em = state.EntityManager;
 
             TimerHelper.CompleteDependencesBeforeRW(in em);
-            em.CompleteDependencyBeforeRW<ShakeDataList>();
-            em.CompleteDependencyBeforeRW<ShakeDataIdPool>();
 
             var timerList = SystemAPI.GetSingleton<TimerList>();
             var timerIdPool = SystemAPI.GetSingleton<TimerIdPool>();
-            var shakeDataList = SystemAPI.GetSingleton<ShakeDataList>();
-            var shakeDataIdPool = SystemAPI.GetSingleton<ShakeDataIdPool>();
 
-            foreach (var (transformRef, shakeDataIdHolderRef) in
+            foreach (var (transformRef, canTweenXTag, tweenDataXRef) in
                 SystemAPI.Query<
                     RefRO<LocalTransform>
-                    , RefRW<ShakeDataIdHolder>>()
+                    , EnabledRefRW<Can_ShakePositionXTweener_TweenTag>
+                    , RefRW<ShakePositionXTweener_TweenData>>()
                     .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState))
             {
                 UnityEngine.Debug.Log("Create SHAKE");
 
-                ShakeBuilder.Create(0.5f, 15f, 2f, in transformRef.ValueRO.Position)
-                    .Build(ref timerList, in timerIdPool, ref shakeDataList, in shakeDataIdPool, ref shakeDataIdHolderRef.ValueRW);
-                    
+                ShakePositionXTweener.TweenBuilder
+                    .Create(
+                        shakePositionConfigs.Duration
+                        , new(shakePositionConfigs.Frequency
+                        , shakePositionConfigs.Intensity, 0f))
+                    .Build(ref timerList, in timerIdPool, ref tweenDataXRef.ValueRW, canTweenXTag);
+
             }
 
         }

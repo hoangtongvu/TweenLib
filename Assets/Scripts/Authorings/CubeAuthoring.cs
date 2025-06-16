@@ -1,5 +1,5 @@
-﻿using TweenLib.ShakeTween.Data;
-using TweenLib.StandardTweeners;
+﻿using TweenLib.StandardTweeners;
+using TweenLib.StandardTweeners.ShakePositionTweeners;
 using Unity.Entities;
 using UnityEngine;
 
@@ -15,7 +15,10 @@ namespace Authoring
 
                 TransformPositionTweener.AddTweenComponents(this, entity);
 
-                AddComponent(entity, ShakeDataIdHolder.Invalid);
+                ShakePositionTweener.AddTweenComponents(this, entity);
+                ShakePositionXYTweener.AddTweenComponents(this, entity);
+                ShakePositionXZTweener.AddTweenComponents(this, entity);
+                ShakePositionXTweener.AddTweenComponents(this, entity);
 
             }
         }
