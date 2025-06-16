@@ -1,7 +1,5 @@
 using Components;
 using TweenLib.StandardTweeners;
-using TweenLib.Timer.Data;
-using TweenLib.Timer.Logic;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -33,11 +31,6 @@ namespace Systems.Initialization
             var tweenPositionConfigs = SystemAPI.GetSingleton<TweenPositionConfigs>();
             if (tweenPositionConfigs.TweenPositionType != TweenPositionType.XYZ) return;
 
-            TimerHelper.CompleteDependencesBeforeRW(state.EntityManager);
-
-            var timerList = SystemAPI.GetSingleton<TimerList>();
-            var timerIdPool = SystemAPI.GetSingleton<TimerIdPool>();
-
             foreach (var (transformRef, canTweenTag, tweenDataRef) in
                 SystemAPI.Query<
                     RefRO<LocalTransform>
@@ -54,7 +47,7 @@ namespace Systems.Initialization
                 if (tweenPositionConfigs.UseCustomStartValue)
                     tweenBuilder = tweenBuilder.WithStartValue(tweenPositionConfigs.StartValue);
 
-                tweenBuilder.Build(ref timerList, in timerIdPool, ref tweenDataRef.ValueRW, canTweenTag);
+                tweenBuilder.Build(ref tweenDataRef.ValueRW, canTweenTag);
             }
 
         }

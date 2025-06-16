@@ -1,7 +1,5 @@
 using Components;
 using TweenLib.StandardTweeners.ShakePositionTweeners;
-using TweenLib.Timer.Data;
-using TweenLib.Timer.Logic;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -33,13 +31,6 @@ namespace Systems.Initialization.ShakeCreateSystems
             var shakePositionConfigs = SystemAPI.GetSingleton<ShakePositionConfigs>();
             if (shakePositionConfigs.ShakePositionType != ShakePositionType.XYZ) return;
 
-            var em = state.EntityManager;
-
-            TimerHelper.CompleteDependencesBeforeRW(in em);
-
-            var timerList = SystemAPI.GetSingleton<TimerList>();
-            var timerIdPool = SystemAPI.GetSingleton<TimerIdPool>();
-
             foreach (var (transformRef, canTweenXTag, tweenDataXRef) in
                 SystemAPI.Query<
                     RefRO<LocalTransform>
@@ -54,7 +45,7 @@ namespace Systems.Initialization.ShakeCreateSystems
                         shakePositionConfigs.Duration
                         , new(shakePositionConfigs.Frequency
                         , shakePositionConfigs.Intensity, 0f))
-                    .Build(ref timerList, in timerIdPool, ref tweenDataXRef.ValueRW, canTweenXTag);
+                    .Build(ref tweenDataXRef.ValueRW, canTweenXTag);
 
             }
 

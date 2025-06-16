@@ -71,8 +71,6 @@ using Unity.Burst;
 using Unity.Entities;
 using TweenLib;
 using TweenLib.Utilities;
-using TweenLib.Timer.Data;
-using TweenLib.Timer.Logic;
 
 namespace {tweenerNamespace}
 {{
@@ -89,7 +87,10 @@ namespace {tweenerNamespace}
             {{
                 this.tweenData = new()
                 {{
-                    DurationSeconds = durationSeconds,
+                    TweenTimer = new()
+                    {{
+                        DurationSeconds = durationSeconds,
+                    }},
                     Target = target,
                     EasingType = EasingType.Linear,
                 }};
@@ -113,13 +114,9 @@ namespace {tweenerNamespace}
 
             [BurstCompile]
             public void Build(
-                ref TimerList timerList
-                , in TimerIdPool timerIdPool
-                , ref {tweenDataIdentifier} tweenData
+                ref {tweenDataIdentifier} tweenData
                 , in EnabledRefRW<{canTweenTagIdentifier}> canTweenTag)
             {{
-                this.tweenData.TimerId = TimerHelper.AddTimer(ref timerList, in timerIdPool);
-
                 tweenData = this.tweenData;
                 canTweenTag.ValueRW = true;
             }}

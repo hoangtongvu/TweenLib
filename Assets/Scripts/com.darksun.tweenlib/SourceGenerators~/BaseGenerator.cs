@@ -92,14 +92,14 @@ namespace {componentNamespace}
 
             string sourceCode = $@"
 using TweenLib;
+using TweenLib.Commons;
 using TweenLib.Utilities;
 
 namespace {componentNamespace}
 {{
     public struct {tweenerName}_TweenData : Unity.Entities.IComponentData
     {{
-        public int TimerId;
-        public float DurationSeconds;
+        public TweenTimer TweenTimer;
         public {fullIdentifier} Target;
 
         public bool StartValueInitialized;
@@ -220,8 +220,6 @@ using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using TweenLib.Utilities.Extensions;
-using TweenLib.Timer.Data;
-using TweenLib.Timer.Logic;
 
 namespace TweenLib.Systems
 {{
@@ -230,7 +228,6 @@ namespace TweenLib.Systems
     public partial struct {systemName} : ISystem
     {{
         private EntityQuery query;
-        private EntityQuery timerQuery;
         private ComponentTypeHandle<{componentIdentifier}> componentTypeHandle;
         private ComponentTypeHandle<{canTweenTagIdentifier}> canTweenTagTypeHandle;
         private ComponentTypeHandle<{tweenDataIdentifier}> tweenDataTypeHandle;
@@ -245,18 +242,11 @@ namespace TweenLib.Systems
                 .WithAll<{canTweenTagIdentifier}>()
                 .Build(ref state);
 
-            queryBuilder = new EntityQueryBuilder(Allocator.Temp);
-            this.timerQuery = queryBuilder
-                .WithAllRW<TimerList>()
-                .WithAllRW<TimerIdPool>()
-                .Build(ref state);
-
             this.componentTypeHandle = state.GetComponentTypeHandle<{componentIdentifier}>(false);
             this.canTweenTagTypeHandle = state.GetComponentTypeHandle<{canTweenTagIdentifier}>(false);
             this.tweenDataTypeHandle = state.GetComponentTypeHandle<{tweenDataIdentifier}>(false);
 
             state.RequireForUpdate(this.query);
-            state.RequireForUpdate(this.timerQuery);
         }}
 
         [BurstCompile]
@@ -266,13 +256,9 @@ namespace TweenLib.Systems
             this.canTweenTagTypeHandle.Update(ref state);
             this.tweenDataTypeHandle.Update(ref state);
 
-            TimerHelper.CompleteDependencesBeforeRW(state.EntityManager);
-
             state.Dependency = new TweenIJC
             {{
                 DeltaTime = state.WorldUnmanaged.Time.DeltaTime,
-                TimerList = this.timerQuery.GetSingleton<TimerList>(),
-                TimerIdPool = this.timerQuery.GetSingleton<TimerIdPool>(),
                 ComponentTypeHandle = this.componentTypeHandle,
                 CanTweenTagTypeHandle = this.canTweenTagTypeHandle,
                 TweenDataTypeHandle = this.tweenDataTypeHandle,
@@ -285,8 +271,6 @@ namespace TweenLib.Systems
         public struct TweenIJC : IJobChunk
         {{
             [Unity.Collections.ReadOnly] public float DeltaTime;
-            [NativeDisableParallelForRestriction] public TimerList TimerList;
-            [NativeDisableParallelForRestriction] public TimerIdPool TimerIdPool;
 
             public ComponentTypeHandle<{componentIdentifier}> ComponentTypeHandle;
             public ComponentTypeHandle<{canTweenTagIdentifier}> CanTweenTagTypeHandle;
@@ -307,11 +291,11 @@ namespace TweenLib.Systems
                     ref var tweenData = ref tweenDataArray.ElementAt(i);
                     var canTweenTag = canTweenTagEnabledMask_RW.GetEnabledRefRW<{canTweenTagIdentifier}>(i);
 
-                    var timeCounterSeconds = this.TimerList.Value[tweenData.TimerId];
-                    if (timeCounterSeconds.Counter >= tweenData.DurationSeconds)
+                    tweenData.TweenTimer.ElapsedSeconds += this.DeltaTime;
+                    
+                    if (tweenData.TweenTimer.TimedOut())
                     {{
                         // Stop tweening
-                        TimerHelper.RemoveTimer(in this.TimerList, in this.TimerIdPool, in tweenData.TimerId);
                         canTweenTag.ValueRW = false;
                         
                         // Finalize the component on tween stop
@@ -335,7 +319,7 @@ namespace TweenLib.Systems
     
                     global::{tweenerIdentifier}.Tween_Static(
                         ref component
-                        , timeCounterSeconds.GetNormalizedTime(tweenData.DurationSeconds)
+                        , tweenData.TweenTimer.GetNormalizedTime()
                         , tweenData.EasingType
                         , in tweenData.StartValue
                         , in tweenData.Target);
