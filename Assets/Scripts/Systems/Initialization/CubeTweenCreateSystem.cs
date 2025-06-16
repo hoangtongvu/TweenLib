@@ -1,7 +1,7 @@
+using Components;
 using TweenLib.StandardTweeners;
 using TweenLib.Timer.Data;
 using TweenLib.Timer.Logic;
-using TweenLib.Utilities;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -30,6 +30,9 @@ namespace Systems.Initialization
         {
             if (!Input.GetKeyDown(KeyCode.Space)) return;
 
+            var tweenPositionConfigs = SystemAPI.GetSingleton<TweenPositionConfigs>();
+            if (tweenPositionConfigs.TweenPositionType != TweenPositionType.XYZ) return;
+
             TimerHelper.CompleteDependencesBeforeRW(state.EntityManager);
 
             var timerList = SystemAPI.GetSingleton<TimerList>();
@@ -44,12 +47,14 @@ namespace Systems.Initialization
             {
                 UnityEngine.Debug.Log("Create TWEEN");
 
-                var pos = transformRef.ValueRO.Position;
-                pos.x += 3f;
-                
-                TransformPositionTweener.TweenBuilder.Create(0.8f, pos)
-                    .WithEase(EasingType.EaseOutBounce)
-                    .Build(ref timerList, in timerIdPool, ref tweenDataRef.ValueRW, canTweenTag);
+                var tweenBuilder = TransformPositionTweener.TweenBuilder
+                    .Create(tweenPositionConfigs.Duration, tweenPositionConfigs.TargetValue)
+                    .WithEase(tweenPositionConfigs.EasingType);
+
+                if (tweenPositionConfigs.UseCustomStartValue)
+                    tweenBuilder = tweenBuilder.WithStartValue(tweenPositionConfigs.StartValue);
+
+                tweenBuilder.Build(ref timerList, in timerIdPool, ref tweenDataRef.ValueRW, canTweenTag);
             }
 
         }
