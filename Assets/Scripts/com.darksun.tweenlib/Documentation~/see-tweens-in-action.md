@@ -5,7 +5,4 @@
 3. Enter the PlayMode
 4. Press `Space` to trigger normal Tween, press `F` to trigger Shake Tween
 
-![sample-scene-tween-configs](Videos/sample-scene-tween-configs.mp4)
-
-https://github.com/user-attachments/assets/d8d5d91b-8f1d-44a6-a509-a23540d7c7ff
-
+https://github.com/user-attachments/assets/05ab5c43-21c6-4ddf-b74a-aab571ebe122
