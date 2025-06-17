@@ -71,7 +71,7 @@ foreach (var (transformRef, canTweenXTag, tweenDataXRef) in
 }
 ```
 
-[ShakeHelper](Assets/Scripts/com.darksun.tweenlib/Utilities/Helpers/ShakeHelper.cs) also supports helper methods `FloatShake()` & `Float2Shake()` which are used in:
-- [ShakePositionXTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionXTweener.cs)
-- [ShakePositionXYTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionXYTweener.cs)
-- [ShakePositionXZTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionXZTweener.cs)
+[ShakeHelper](../../com.darksun.tweenlib/Utilities/Helpers/ShakeHelper.cs) also supports helper methods `FloatShake()` & `Float2Shake()` which are used in:
+- [ShakePositionXTweener](../../com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionXTweener.cs)
+- [ShakePositionXYTweener](../../com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionXYTweener.cs)
+- [ShakePositionXZTweener](../../com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionXZTweener.cs)

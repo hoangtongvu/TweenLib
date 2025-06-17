@@ -13,6 +13,11 @@ To install, paste the following URL into Unity's **Package Manager**:
 3. Select **"Add package from git URL..."**.
 4. Enter: `https://github.com/hoangtongvu/com.darksun.tweenlib.git?path=/Assets/Scripts/com.darksun.tweenlib`
 
+## Documentation
+
+- [Sample scene and see tweens in action](Assets/Scripts/com.darksun.tweenlib/Documentation~/see-tweens-in-action.md)
+- [How it works](Assets/Scripts/com.darksun.tweenlib/Documentation~/how-it-works.md)
+
 ## How to use
 
 See [how-to-use-shake-tween](Assets/Scripts/com.darksun.tweenlib/Documentation~/how-to-use-shake-tween.md) for Shake tween case.
