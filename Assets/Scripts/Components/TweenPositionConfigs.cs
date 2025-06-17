@@ -1,3 +1,4 @@
+using TweenLib.Commons;
 using TweenLib.Utilities;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -15,6 +16,10 @@ namespace Components
         public float3 TargetValue;
         public TweenPositionType TweenPositionType;
         public EasingType EasingType;
+
+        public byte LoopCount;
+        public LoopType LoopType;
+
     }
 
     public enum TweenPositionType

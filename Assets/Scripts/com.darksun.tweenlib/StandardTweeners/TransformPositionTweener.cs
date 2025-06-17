@@ -15,6 +15,14 @@ namespace TweenLib.StandardTweeners
         }
 
         [BurstCompile]
+        public void GetSum(in float3 a, in float3 b, out float3 result)
+            => result = a + b;
+
+        [BurstCompile]
+        public void GetDifference(in float3 a, in float3 b, out float3 result)
+            => result = a - b;
+
+        [BurstCompile]
         public void Tween(ref LocalTransform componentData, in float normalizedTime, EasingType easingType, in float3 startValue, in float3 target)
         {
             TweenHelper.Float3Tween(in normalizedTime, easingType, in startValue, in target, out componentData.Position);

@@ -331,6 +331,8 @@ MonoBehaviour:
       z: 0
     TweenPositionType: 0
     EasingType: 1
+    LoopCount: 1
+    LoopType: 0
 --- !u!4 &1116370473
 Transform:
   m_ObjectHideFlags: 0

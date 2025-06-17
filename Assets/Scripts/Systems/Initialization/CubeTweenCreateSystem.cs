@@ -42,12 +42,15 @@ namespace Systems.Initialization
 
                 var tweenBuilder = TransformPositionTweener.TweenBuilder
                     .Create(tweenPositionConfigs.Duration, tweenPositionConfigs.TargetValue)
-                    .WithEase(tweenPositionConfigs.EasingType);
+                    .WithEase(tweenPositionConfigs.EasingType)
+                    .WithLoops(tweenPositionConfigs.LoopType, tweenPositionConfigs.LoopCount);
 
                 if (tweenPositionConfigs.UseCustomStartValue)
                     tweenBuilder = tweenBuilder.WithStartValue(tweenPositionConfigs.StartValue);
 
-                tweenBuilder.Build(ref tweenDataRef.ValueRW, canTweenTag);
+                tweenBuilder
+                    .Build(ref tweenDataRef.ValueRW, canTweenTag);
+
             }
 
         }

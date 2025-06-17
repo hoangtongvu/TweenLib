@@ -176,7 +176,9 @@ namespace {tweenerNamespace}
                 var originalName = methodDeclaration.Identifier.ValueText;
                 var staticName = originalName + "_Static";
 
-                var body = methodDeclaration.Body.ToFullString().Trim();
+                var body = methodDeclaration.Body?.ToFullString()?.Trim()
+                    ?? $" => {methodDeclaration.ExpressionBody?.Expression.ToFullString().Trim()};";
+
                 var parameterList = methodDeclaration.ParameterList.ToFullString();
                 var modifiers = methodDeclaration.Modifiers.ToString();
                 modifiers = "static " + modifiers;
@@ -219,6 +221,7 @@ using Unity.Entities;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
+using TweenLib.Commons;
 using TweenLib.Utilities.Extensions;
 
 namespace TweenLib.Systems
@@ -291,9 +294,41 @@ namespace TweenLib.Systems
                     ref var tweenData = ref tweenDataArray.ElementAt(i);
                     var canTweenTag = canTweenTagEnabledMask_RW.GetEnabledRefRW<{canTweenTagIdentifier}>(i);
 
-                    tweenData.TweenTimer.ElapsedSeconds += this.DeltaTime;
-                    
+                    tweenData.TweenTimer.Tick(in this.DeltaTime);
+                    float finalNormalizedTime = 1f;
+
                     if (tweenData.TweenTimer.TimedOut())
+                    {{
+                        tweenData.TweenTimer.IncreaseLoopCounter();
+                        tweenData.TweenTimer.ResetTimeCounter();
+                        
+                        switch (tweenData.TweenTimer.LoopType)
+                        {{
+                            case LoopType.Restart:
+                                finalNormalizedTime = 1f;
+                                break;
+                            case LoopType.Flip:
+                                finalNormalizedTime = 0f;
+
+                                var temp = tweenData.StartValue;
+                                tweenData.StartValue = tweenData.Target;
+                                tweenData.Target = temp;
+                                break;
+                            case LoopType.Incremental:
+                                finalNormalizedTime = 0f;
+
+                                global::{tweenerIdentifier}.GetDifference_Static(in tweenData.Target, in tweenData.StartValue, out var difference);
+                                global::{tweenerIdentifier}.GetSum_Static(in tweenData.StartValue, in difference, out tweenData.StartValue);
+                                global::{tweenerIdentifier}.GetSum_Static(in tweenData.Target, in difference, out tweenData.Target);
+                                break;
+                            case LoopType.Yoyo:
+                                finalNormalizedTime = 1 - tweenData.TweenTimer.LoopCounter % 2;
+                                tweenData.TweenTimer.ToggleNormalizedTimeDirection();
+                                break;
+                        }}
+                    }}
+
+                    if (!tweenData.TweenTimer.IsInfiniteLoop() && tweenData.TweenTimer.LoopCounterExceeded())
                     {{
                         // Stop tweening
                         canTweenTag.ValueRW = false;
@@ -301,7 +336,7 @@ namespace TweenLib.Systems
                         // Finalize the component on tween stop
                         global::{tweenerIdentifier}.Tween_Static(
                             ref component
-                            , 1f
+                            , finalNormalizedTime
                             , tweenData.EasingType
                             , in tweenData.StartValue
                             , in tweenData.Target);

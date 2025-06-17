@@ -70,6 +70,7 @@ using System;
 using Unity.Burst;
 using Unity.Entities;
 using TweenLib;
+using TweenLib.Commons;
 using TweenLib.Utilities;
 
 namespace {tweenerNamespace}
@@ -90,6 +91,8 @@ namespace {tweenerNamespace}
                     TweenTimer = new()
                     {{
                         DurationSeconds = durationSeconds,
+                        LoopCounter = 1,
+                        LoopCountLimit = 1,
                     }},
                     Target = target,
                     EasingType = EasingType.Linear,
@@ -109,6 +112,14 @@ namespace {tweenerNamespace}
             public TweenBuilder WithEase(EasingType easingType)
             {{
 	            this.tweenData.EasingType = easingType;
+                return this;
+            }}
+
+            [BurstCompile]
+            public TweenBuilder WithLoops(LoopType loopType, byte loopCount = byte.MinValue)
+            {{
+	            this.tweenData.TweenTimer.LoopCountLimit = loopCount;
+	            this.tweenData.TweenTimer.LoopType = loopType;
                 return this;
             }}
 

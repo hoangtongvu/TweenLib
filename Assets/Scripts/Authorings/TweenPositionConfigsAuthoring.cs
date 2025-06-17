@@ -1,4 +1,5 @@
 ﻿using Components;
+using TweenLib.Commons;
 using TweenLib.Utilities;
 using Unity.Entities;
 using UnityEngine;
@@ -15,6 +16,8 @@ namespace Authoring
             TargetValue = new(3f, 0f, 0f),
             TweenPositionType = TweenPositionType.XYZ,
             EasingType = EasingType.Linear,
+            LoopCount = 1,
+            LoopType = LoopType.Restart,
         };
 
         private class Baker : Baker<TweenPositionConfigsAuthoring>
