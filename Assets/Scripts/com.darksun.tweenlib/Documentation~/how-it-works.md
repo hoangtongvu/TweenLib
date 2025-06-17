@@ -106,7 +106,7 @@ namespace TweenLib.StandardTweeners
 
 ## 5. Tween System (ISystem) + TweenJob (IJobChunk)
 
-All Tween systems (main systems that do the Tweens) will be in the same namespace `TweenLib.Systems` and update in [TweenLib.TweenSystemGroup]():
+All Tween systems (main systems that do the Tweens) will be in the same namespace `TweenLib.Systems` and update in [TweenLib.TweenSystemGroup](../TweenSystemGroup.cs):
 
 ```cs
 [UpdateInGroup(typeof(PresentationSystemGroup))]
@@ -118,7 +118,7 @@ The `TweenJob` will do the following things:
 - If `TweenTimer` timed out:
     - Assign the component's value to `TargetValue`
     - Stop tweening
-- Initialize the `StartValue`
+- Try initializing the `StartValue`
 - Do the Tween
 
 An example of a generated **TweenSystem**:
