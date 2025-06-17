@@ -10,7 +10,7 @@ namespace TweenLib
         /// <summary>
         /// Default start value in case the user does not specify it when build the tween.
         /// </summary>
-        Target GetDefaultStartValue(in Component componentData);
+        void GetDefaultStartValue(in Component componentData, out Target defaultStartValue);
 
         /// <summary>
         /// result = a + b.

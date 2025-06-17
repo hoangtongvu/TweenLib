@@ -346,9 +346,9 @@ namespace TweenLib.Systems
 
                     if (!tweenData.StartValueInitialized)
                     {{
-                        tweenData.StartValue = tweenData.UseCustomStartValue
-                            ? tweenData.StartValue
-                            : global::{tweenerIdentifier}.GetDefaultStartValue_Static(in component);
+                        if (!tweenData.UseCustomStartValue)
+                            global::{tweenerIdentifier}.GetDefaultStartValue_Static(in component, out tweenData.StartValue);
+
                         tweenData.StartValueInitialized = true;
                     }}
     
