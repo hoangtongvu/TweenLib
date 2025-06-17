@@ -20,6 +20,8 @@ namespace Components
         public byte LoopCount;
         public LoopType LoopType;
 
+        public float DelaySeconds;
+
     }
 
     public enum TweenPositionType

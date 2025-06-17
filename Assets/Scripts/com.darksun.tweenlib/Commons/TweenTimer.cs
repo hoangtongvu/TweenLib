@@ -11,6 +11,9 @@ namespace TweenLib.Commons
         public byte LoopCounter;
         public byte LoopCountLimit;
         public LoopType LoopType;
+
+        public BoolByte DelayEnded;
+        public float DelaySeconds;
     }
 
     public enum NormalizedTimeDirection : byte

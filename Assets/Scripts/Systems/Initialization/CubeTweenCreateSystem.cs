@@ -43,7 +43,8 @@ namespace Systems.Initialization
                 var tweenBuilder = TransformPositionTweener.TweenBuilder
                     .Create(tweenPositionConfigs.Duration, tweenPositionConfigs.TargetValue)
                     .WithEase(tweenPositionConfigs.EasingType)
-                    .WithLoops(tweenPositionConfigs.LoopType, tweenPositionConfigs.LoopCount);
+                    .WithLoops(tweenPositionConfigs.LoopType, tweenPositionConfigs.LoopCount)
+                    .WithDelay(tweenPositionConfigs.DelaySeconds);
 
                 if (tweenPositionConfigs.UseCustomStartValue)
                     tweenBuilder = tweenBuilder.WithStartValue(tweenPositionConfigs.StartValue);

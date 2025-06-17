@@ -295,6 +295,14 @@ namespace TweenLib.Systems
                     var canTweenTag = canTweenTagEnabledMask_RW.GetEnabledRefRW<{canTweenTagIdentifier}>(i);
 
                     tweenData.TweenTimer.Tick(in this.DeltaTime);
+
+                    if (!tweenData.TweenTimer.DelayEnded)
+                    {{
+                        if (!tweenData.TweenTimer.TimeCounterReachedDelayLimit()) continue;
+                        tweenData.TweenTimer.DelayEnded = true;
+                        tweenData.TweenTimer.ResetTimeCounter();
+                    }}
+    
                     float finalNormalizedTime = 1f;
 
                     if (tweenData.TweenTimer.TimedOut())

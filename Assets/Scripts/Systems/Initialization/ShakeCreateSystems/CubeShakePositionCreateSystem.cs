@@ -45,6 +45,7 @@ namespace Systems.Initialization.ShakeCreateSystems
                         shakePositionConfigs.Duration
                         , new(shakePositionConfigs.Frequency
                         , shakePositionConfigs.Intensity, 0f))
+                    .WithDelay(shakePositionConfigs.DelaySeconds)
                     .Build(ref tweenDataXRef.ValueRW, canTweenXTag);
 
             }

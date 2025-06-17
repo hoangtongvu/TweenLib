@@ -274,6 +274,7 @@ MonoBehaviour:
     Frequency: 15
     Intensity: 1
     ShakePositionType: 0
+    DelaySeconds: 0
 --- !u!4 &398511290
 Transform:
   m_ObjectHideFlags: 0
@@ -333,6 +334,7 @@ MonoBehaviour:
     EasingType: 1
     LoopCount: 1
     LoopType: 0
+    DelaySeconds: 0
 --- !u!4 &1116370473
 Transform:
   m_ObjectHideFlags: 0

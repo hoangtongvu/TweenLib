@@ -9,6 +9,8 @@ namespace Components
         public float Frequency;
         public float Intensity;
         public ShakePositionType ShakePositionType;
+
+        public float DelaySeconds;
     }
 
     public enum ShakePositionType

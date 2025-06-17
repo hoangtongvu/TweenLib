@@ -47,6 +47,10 @@ namespace TweenLib.Utilities.Extensions
         public static BoolByte IsInfiniteLoop(in this TweenTimer tweenTimer)
             => tweenTimer.LoopCountLimit == byte.MinValue;
 
+        [BurstCompile]
+        public static BoolByte TimeCounterReachedDelayLimit(in this TweenTimer tweenTimer)
+            => tweenTimer.ElapsedSeconds >= tweenTimer.DelaySeconds;
+
     }
 
 }

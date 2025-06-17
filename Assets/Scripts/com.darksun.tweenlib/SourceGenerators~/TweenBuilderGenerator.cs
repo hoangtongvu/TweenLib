@@ -124,6 +124,13 @@ namespace {tweenerNamespace}
             }}
 
             [BurstCompile]
+            public TweenBuilder WithDelay(float delaySeconds)
+            {{
+	            this.tweenData.TweenTimer.DelaySeconds = delaySeconds;
+                return this;
+            }}
+
+            [BurstCompile]
             public void Build(
                 ref {tweenDataIdentifier} tweenData
                 , in EnabledRefRW<{canTweenTagIdentifier}> canTweenTag)
