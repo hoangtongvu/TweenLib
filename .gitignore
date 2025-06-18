@@ -77,3 +77,6 @@ crashlytics-build.properties
 # Ignore bin and obj folders inside any folder matching *SourceGenerators~*
 **/SourceGenerators~*/bin/
 **/SourceGenerators~*/obj/
+
+# Allow .csproj files inside any SourceGenerators~ folder
+!**/SourceGenerators~/*.csproj
