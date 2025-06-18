@@ -30,7 +30,7 @@ After that, the following code will be generated to the same assembly as the def
 
 1. `{tweenerName}_TweenData` (IComponentData)
 2. `Can_{tweenerName}_TweenTag` (IComponentData)
-3. Tween Components Baking Helper
+3. Tween Components Adding Helper
 4. Tweener Static Methods
 5. Tween System (ISystem) + TweenJob (IJobChunk)
 6. Tween Builder
@@ -69,9 +69,13 @@ namespace Unity.Transforms
 }
 ```
 
-## 3. Tween Components Baking Helper
+## 3. Tween Components Adding Helper
 
-This generated baking helper is a method to quickly add Tween components to the entity in the Authoring phase:
+Tween Components Adding Helpers are generated helper methods for quickly add all tween related components in only one method call. There are 3 overloads for this helper method:
+
+- `AddTweenComponents(IBaker baker, Entity entity)`
+- `AddTweenComponents(in EntityManager em, Entity entity)`
+- `AddTweenComponents(in EntityCommandBuffer ecb, Entity entity)`
 
 ```cs
 namespace TweenLib.StandardTweeners
@@ -84,6 +88,8 @@ namespace TweenLib.StandardTweeners
             baker.SetComponentEnabled<Can_TransformPositionTweener_TweenTag>(entity, false);
             baker.AddComponent<TransformPositionTweener_TweenData>(entity);
         }
+
+        // Remaining...
     }
 }
 ```

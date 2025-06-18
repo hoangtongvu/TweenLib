@@ -48,7 +48,7 @@ namespace TweenLibSourceGenerator
 
                     this.GenerateCanTweenTag(context, tweenerName, componentNamespace);
                     this.GenerateTweenData(context, tweenerName, targetTypeName, targetNamespace, componentNamespace);
-                    this.GenerateTweenComponentsBakingHelper(context, tweenerName, tweenerNamespace, componentNamespace);
+                    this.GenerateTweenComponentsAddingHelper(context, tweenerName, tweenerNamespace, componentNamespace);
                     this.GenerateTweenerStaticMethods(context, structDeclaration, tweenerName, tweenerNamespace);
                     this.GenerateTweenSystem(context, tweenerName, tweenerNamespace, componentTypeName, componentNamespace);
 
@@ -115,7 +115,7 @@ namespace {componentNamespace}
 
         }
 
-        private void GenerateTweenComponentsBakingHelper(
+        private void GenerateTweenComponentsAddingHelper(
             GeneratorExecutionContext context
             , string tweenerName
             , string tweenerNamespace
@@ -123,6 +123,7 @@ namespace {componentNamespace}
         {
             string sourceCode = $@"
 using Unity.Entities;
+using Unity.Burst;
 using {componentNamespace};
 using TweenLib;
 
@@ -135,6 +136,22 @@ namespace {tweenerNamespace}
             baker.AddComponent<Can_{tweenerName}_TweenTag>(entity);
             baker.SetComponentEnabled<Can_{tweenerName}_TweenTag>(entity, false);
             baker.AddComponent<{tweenerName}_TweenData>(entity);
+        }}
+
+        [BurstCompile]
+        public static void AddTweenComponents(in EntityManager em, Entity entity)
+        {{
+            em.AddComponent<Can_{tweenerName}_TweenTag>(entity);
+            em.SetComponentEnabled<Can_{tweenerName}_TweenTag>(entity, false);
+            em.AddComponent<{tweenerName}_TweenData>(entity);
+        }}
+
+        [BurstCompile]
+        public static void AddTweenComponents(in EntityCommandBuffer ecb, Entity entity)
+        {{
+            ecb.AddComponent<Can_{tweenerName}_TweenTag>(entity);
+            ecb.SetComponentEnabled<Can_{tweenerName}_TweenTag>(entity, false);
+            ecb.AddComponent<{tweenerName}_TweenData>(entity);
         }}
     }}
 }}
