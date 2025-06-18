@@ -131,8 +131,6 @@ foreach (var (transformRef, canTweenTag, tweenDataRef) in
         , RefRW<TransformPositionTweener_TweenData>>()
         .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState))
 {
-    // Duration and TargetValue are default parameters for any tweens.
-    // StartValue and Ease are optional.
     TransformPositionTweener.TweenBuilder
         .Create(0.8f, new float3(3f, 0f, 0f))
         .WithStartValue(new float3(-3f, 0f, 0f))
