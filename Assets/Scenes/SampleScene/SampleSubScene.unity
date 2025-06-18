@@ -271,6 +271,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShakePositionConfigs:
     Duration: 2
+    UseCustomStartValue: 1
+    StartValue:
+      x: -3
+      y: 0
+      z: 0
     Frequency: 15
     Intensity: 1
     ShakePositionType: 0

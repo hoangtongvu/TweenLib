@@ -1,4 +1,5 @@
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace Components
 {
@@ -6,6 +7,10 @@ namespace Components
     public struct ShakePositionConfigs : IComponentData
     {
         public float Duration;
+
+        public bool UseCustomStartValue;
+        public float3 StartValue;
+
         public float Frequency;
         public float Intensity;
         public ShakePositionType ShakePositionType;

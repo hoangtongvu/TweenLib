@@ -9,6 +9,8 @@ namespace Authoring
         public ShakePositionConfigs ShakePositionConfigs = new()
         {
             Duration = 2f,
+            UseCustomStartValue = true,
+            StartValue = new(-3f, 0f, 0f),
             Frequency = 15f,
             Intensity = 1,
             ShakePositionType = ShakePositionType.XYZ,

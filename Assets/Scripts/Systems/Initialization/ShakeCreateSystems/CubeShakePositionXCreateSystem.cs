@@ -40,13 +40,17 @@ namespace Systems.Initialization.ShakeCreateSystems
             {
                 UnityEngine.Debug.Log("Create SHAKE");
 
-                ShakePositionXTweener.TweenBuilder
+                var tweenBuilder = ShakePositionXTweener.TweenBuilder
                     .Create(
                         shakePositionConfigs.Duration
                         , new(shakePositionConfigs.Frequency
                         , shakePositionConfigs.Intensity, 0f))
-                    .WithDelay(shakePositionConfigs.DelaySeconds)
-                    .Build(ref tweenDataXRef.ValueRW, canTweenXTag);
+                    .WithDelay(shakePositionConfigs.DelaySeconds);
+
+                if (shakePositionConfigs.UseCustomStartValue)
+                    tweenBuilder = tweenBuilder.WithStartValue(shakePositionConfigs.StartValue);
+
+                tweenBuilder.Build(ref tweenDataXRef.ValueRW, canTweenXTag);
 
             }
 
