@@ -5,4 +5,4 @@
 3. Enter the PlayMode
 4. Modify tweening configs as you wish and press `Space` to trigger normal Tween, press `F` to trigger Shake Tween
 
-https://github.com/user-attachments/assets/ee437123-db71-4595-9289-bd936fa9d6bf
+https://github.com/user-attachments/assets/de6832bd-c72a-4888-9ddb-f6574930c58f
