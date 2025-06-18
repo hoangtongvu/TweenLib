@@ -39,6 +39,10 @@ Or, you can create your own Tweener with custom logic:
     - `Component` is the `IComponentData` that you want to tween on.
     - `Target` is the tween target value.
     - Defining a Tweener means specifying which fields in the Component will be tweened.
+- The Tweener must define the following methods:
+    - `GetDefaultStartValue()`: Define `defaultStartValue` in case you don't want to use custom `startValue`.
+    - `GetSum()` and `GetDifference()`: Used when your Tween Looping Type is `LoopingType.Incremental`.
+    - `Tween()`: This is main tween method.
 - The Tweener must be created inside an assembly that has assembly definition references like ones in [TweenLib.StandardTweeners.asmdef](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/TweenLib.StandardTweeners.asmdef)
 
 **A Tweener example** ([TransformPositionTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/TransformPositionTweener.cs)):
@@ -46,13 +50,18 @@ Or, you can create your own Tweener with custom logic:
 [BurstCompile]
 public partial struct TransformPositionTweener : ITweener<LocalTransform, float3>
 {
-    // Get default startValue for your tween in case you don't want to use custom startValue
-    public float3 GetDefaultStartValue(in LocalTransform componentData)
-    {
-        return componentData.Position;
-    }
+    [BurstCompile]
+    public void GetDefaultStartValue(in LocalTransform componentData, out float3 defaultStartValue)
+        => defaultStartValue = componentData.Position;
 
-    // Main tween method
+    [BurstCompile]
+    public void GetSum(in float3 a, in float3 b, out float3 result)
+        => result = a + b;
+
+    [BurstCompile]
+    public void GetDifference(in float3 a, in float3 b, out float3 result)
+        => result = a - b;
+
     [BurstCompile]
     public void Tween(ref LocalTransform componentData, in float normalizedTime, EasingType easingType, in float3 startValue, in float3 target)
     {
@@ -100,6 +109,15 @@ public class CubeAuthoring : MonoBehaviour
 
 To trigger tweening, use `TweenBuilder` in your systems, which can be accessed via `Tweener`.
 
+`TweenBuilder` APIs:
+
+- `Create()` and `Build()` (**Required**)
+- `WithXXX()` (**Optional**):
+    - `WithStartValue()`: Specify the custom start value for the tween.
+    - `WithEase()`: Specify easing type for the tween, default value is `EasingType.Linear`.
+    - `WithLoops(LoopType loopType, byte loopCount = byte.MinValue)`: Specify `LoopType` and `loopCount`, `loopCount == 0` means infinite loop. Since the `loopCount` is byte, its value can't exceed 255.
+    - `WithDelay()`: Specify delay seconds before the tween start.
+
 **A TweenBuilder usage example:**
 ```cs
 foreach (var (transformRef, canTweenTag, tweenDataRef) in
@@ -115,11 +133,15 @@ foreach (var (transformRef, canTweenTag, tweenDataRef) in
         .Create(0.8f, new float3(3f, 0f, 0f))
         .WithStartValue(new float3(-3f, 0f, 0f))
         .WithEase(EasingType.Linear)
+        .WithLoops(LoopType.Yoyo, 2)
+        .WithDelay(0.2f);
         .Build(ref tweenDataRef.ValueRW, canTweenTag);
 }
 ```
 
 See [EasingType](Assets/Scripts/com.darksun.tweenlib/Utilities/EasingUtilities.cs) in EasingUtilities.cs to see all supported Easing Types.
+
+See [LoopType](Assets/Scripts/com.darksun.tweenlib/Commons/LoopType.cs) to see all supported Looping Types.
 
 ## Word of caution
 

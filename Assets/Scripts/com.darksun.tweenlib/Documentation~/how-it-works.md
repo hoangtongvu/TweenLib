@@ -6,10 +6,17 @@ Suppose we define a Tweener **manually**:
 [BurstCompile]
 public partial struct TransformPositionTweener : ITweener<LocalTransform, float3>
 {
-    public float3 GetDefaultStartValue(in LocalTransform componentData)
-    {
-        return componentData.Position;
-    }
+    [BurstCompile]
+    public void GetDefaultStartValue(in LocalTransform componentData, out float3 defaultStartValue)
+        => defaultStartValue = componentData.Position;
+
+    [BurstCompile]
+    public void GetSum(in float3 a, in float3 b, out float3 result)
+        => result = a + b;
+
+    [BurstCompile]
+    public void GetDifference(in float3 a, in float3 b, out float3 result)
+        => result = a - b;
 
     [BurstCompile]
     public void Tween(ref LocalTransform componentData, in float normalizedTime, EasingType easingType, in float3 startValue, in float3 target)
@@ -19,7 +26,7 @@ public partial struct TransformPositionTweener : ITweener<LocalTransform, float3
 }
 ```
 
-After that, the following code will be generated for each Tweener by SourceGenerator to the same assembly as the defined Tweener:
+After that, the following code will be generated to the same assembly as the defined Tweener by SourceGenerator:
 
 1. `{tweenerName}_TweenData` (IComponentData)
 2. `Can_{tweenerName}_TweenTag` (IComponentData)
@@ -51,7 +58,7 @@ namespace Unity.Transforms
 
 ## 2. `Can_{tweenerName}_TweenTag`
 
-`Can_{tweenerName}_TweenTag` will be used to trigger the Tween, it also stays in the same namespace as `TargetValue`:
+`Can_{tweenerName}_TweenTag` will be used to trigger the Tween, it also stays in the same namespace as `TComponent`:
 
 ```cs
 namespace Unity.Transforms
@@ -64,7 +71,7 @@ namespace Unity.Transforms
 
 ## 3. Tween Components Baking Helper
 
-This generated baking helper is a method for quickly adding Tween components to the entity in the Authoring phase:
+This generated baking helper is a method to quickly add Tween components to the entity in the Authoring phase:
 
 ```cs
 namespace TweenLib.StandardTweeners
@@ -83,17 +90,24 @@ namespace TweenLib.StandardTweeners
 
 ## 4. Tweener Static Methods
 
-Since our Tweeners do not contain any data, we can generate static versions of `GetDefaultStartValue()` and `Tween()` methods for performance purposes:
+Since our Tweeners do not contain any data, SourceGenerator will generate a static version for each Tweener's method for performance purposes:
 
 ```cs
 namespace TweenLib.StandardTweeners
 {
     public partial struct TransformPositionTweener
     {
-        static public float3 GetDefaultStartValue_Static(in LocalTransform componentData)
-        {
-            return componentData.Position;
-        }
+        [BurstCompile]
+        static public void GetDefaultStartValue_Static(in LocalTransform componentData, out float3 defaultStartValue)
+            => defaultStartValue = componentData.Position;
+
+        [BurstCompile]
+        static public void GetSum_Static(in float3 a, in float3 b, out float3 result)
+            => result = a + b;
+
+        [BurstCompile]
+        static public void GetDifference_Static(in float3 a, in float3 b, out float3 result)
+            => result = a - b;
 
         [BurstCompile]
         static public void Tween_Static(ref LocalTransform componentData, in float normalizedTime, EasingType easingType, in float3 startValue, in float3 target)
@@ -115,8 +129,13 @@ public partial class TweenSystemGroup : ComponentSystemGroup { }
 
 The `TweenJob` will do the following things:
 - Tick the `TweenTimer`
+- Do the delay checking
 - If `TweenTimer` timed out:
-    - Assign the component's value to `TargetValue`
+    - Increase `loopCounter` by 1
+    - Reset the `timeCounter`
+    - Do some actions based on Tween's `LoopType`
+- When `TweenTimer`'s `loopCounter` exceeds the `loopCountLimit`:
+    - Assign final value to the component's value
     - Stop tweening
 - Try initializing the `StartValue`
 - Do the Tween
@@ -135,23 +154,23 @@ namespace TweenLib.Systems
     public partial struct TransformPositionTweener_TweenSystem : ISystem
     {
         private EntityQuery query;
-        private ComponentTypeHandle<Unity.Transforms.LocalTransform> componentTypeHandle;
-        private ComponentTypeHandle<Unity.Transforms.Can_TransformPositionTweener_TweenTag> canTweenTagTypeHandle;
-        private ComponentTypeHandle<Unity.Transforms.TransformPositionTweener_TweenData> tweenDataTypeHandle;
+        private ComponentTypeHandle<LocalTransform> componentTypeHandle;
+        private ComponentTypeHandle<Can_TransformPositionTweener_TweenTag> canTweenTagTypeHandle;
+        private ComponentTypeHandle<TransformPositionTweener_TweenData> tweenDataTypeHandle;
 
         [BurstCompile]
-        public void OnCreate(ref Unity.Entities.SystemState state)
+        public void OnCreate(ref SystemState state)
         {
             var queryBuilder = new EntityQueryBuilder(Allocator.Temp);
             this.query = queryBuilder
-                .WithAllRW<Unity.Transforms.LocalTransform>()
-                .WithAllRW<Unity.Transforms.TransformPositionTweener_TweenData>()
-                .WithAll<Unity.Transforms.Can_TransformPositionTweener_TweenTag>()
+                .WithAllRW<LocalTransform>()
+                .WithAllRW<TransformPositionTweener_TweenData>()
+                .WithAll<Can_TransformPositionTweener_TweenTag>()
                 .Build(ref state);
 
-            this.componentTypeHandle = state.GetComponentTypeHandle<Unity.Transforms.LocalTransform>(false);
-            this.canTweenTagTypeHandle = state.GetComponentTypeHandle<Unity.Transforms.Can_TransformPositionTweener_TweenTag>(false);
-            this.tweenDataTypeHandle = state.GetComponentTypeHandle<Unity.Transforms.TransformPositionTweener_TweenData>(false);
+            this.componentTypeHandle = state.GetComponentTypeHandle<LocalTransform>(false);
+            this.canTweenTagTypeHandle = state.GetComponentTypeHandle<Can_TransformPositionTweener_TweenTag>(false);
+            this.tweenDataTypeHandle = state.GetComponentTypeHandle<TransformPositionTweener_TweenData>(false);
 
             state.RequireForUpdate(this.query);
         }
@@ -170,16 +189,17 @@ namespace TweenLib.Systems
                 CanTweenTagTypeHandle = this.canTweenTagTypeHandle,
                 TweenDataTypeHandle = this.tweenDataTypeHandle,
             }.ScheduleParallel(this.query, state.Dependency);
+                
         }
 
         [BurstCompile]
         public struct TweenIJC : IJobChunk
         {
-            [Unity.Collections.ReadOnly] public float DeltaTime;
+            [ReadOnly] public float DeltaTime;
 
-            public ComponentTypeHandle<Unity.Transforms.LocalTransform> ComponentTypeHandle;
-            public ComponentTypeHandle<Unity.Transforms.Can_TransformPositionTweener_TweenTag> CanTweenTagTypeHandle;
-            public ComponentTypeHandle<Unity.Transforms.TransformPositionTweener_TweenData> TweenDataTypeHandle;
+            public ComponentTypeHandle<LocalTransform> ComponentTypeHandle;
+            public ComponentTypeHandle<Can_TransformPositionTweener_TweenTag> CanTweenTagTypeHandle;
+            public ComponentTypeHandle<TransformPositionTweener_TweenData> TweenDataTypeHandle;
 
             [BurstCompile]
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
@@ -194,19 +214,59 @@ namespace TweenLib.Systems
                 {
                     ref var component = ref componentArray.ElementAt(i);
                     ref var tweenData = ref tweenDataArray.ElementAt(i);
-                    var canTweenTag = canTweenTagEnabledMask_RW.GetEnabledRefRW<Unity.Transforms.Can_TransformPositionTweener_TweenTag>(i);
+                    var canTweenTag = canTweenTagEnabledMask_RW.GetEnabledRefRW<Can_TransformPositionTweener_TweenTag>(i);
 
-                    tweenData.TweenTimer.ElapsedSeconds += this.DeltaTime;
-                    
+                    tweenData.TweenTimer.Tick(in this.DeltaTime);
+
+                    if (!tweenData.TweenTimer.DelayEnded)
+                    {
+                        if (!tweenData.TweenTimer.TimeCounterReachedDelayLimit()) continue;
+                        tweenData.TweenTimer.DelayEnded = true;
+                        tweenData.TweenTimer.ResetTimeCounter();
+                    }
+    
+                    float finalNormalizedTime = 1f;
+
                     if (tweenData.TweenTimer.TimedOut())
+                    {
+                        tweenData.TweenTimer.IncreaseLoopCounter();
+                        tweenData.TweenTimer.ResetTimeCounter();
+                        
+                        switch (tweenData.TweenTimer.LoopType)
+                        {
+                            case LoopType.Restart:
+                                finalNormalizedTime = 1f;
+                                break;
+                            case LoopType.Flip:
+                                finalNormalizedTime = 0f;
+
+                                var temp = tweenData.StartValue;
+                                tweenData.StartValue = tweenData.Target;
+                                tweenData.Target = temp;
+                                break;
+                            case LoopType.Incremental:
+                                finalNormalizedTime = 0f;
+
+                                TransformPositionTweener.GetDifference_Static(in tweenData.Target, in tweenData.StartValue, out var difference);
+                                TransformPositionTweener.GetSum_Static(in tweenData.StartValue, in difference, out tweenData.StartValue);
+                                TransformPositionTweener.GetSum_Static(in tweenData.Target, in difference, out tweenData.Target);
+                                break;
+                            case LoopType.Yoyo:
+                                finalNormalizedTime = 1 - tweenData.TweenTimer.LoopCounter % 2;
+                                tweenData.TweenTimer.ToggleNormalizedTimeDirection();
+                                break;
+                        }
+                    }
+
+                    if (!tweenData.TweenTimer.IsInfiniteLoop() && tweenData.TweenTimer.LoopCounterExceeded())
                     {
                         // Stop tweening
                         canTweenTag.ValueRW = false;
                         
                         // Finalize the component on tween stop
-                        global::TweenLib.StandardTweeners.TransformPositionTweener.Tween_Static(
+                        TransformPositionTweener.Tween_Static(
                             ref component
-                            , 1f
+                            , finalNormalizedTime
                             , tweenData.EasingType
                             , in tweenData.StartValue
                             , in tweenData.Target);
@@ -216,13 +276,13 @@ namespace TweenLib.Systems
 
                     if (!tweenData.StartValueInitialized)
                     {
-                        tweenData.StartValue = tweenData.UseCustomStartValue
-                            ? tweenData.StartValue
-                            : global::TweenLib.StandardTweeners.TransformPositionTweener.GetDefaultStartValue_Static(in component);
+                        if (!tweenData.UseCustomStartValue)
+                            TransformPositionTweener.GetDefaultStartValue_Static(in component, out tweenData.StartValue);
+
                         tweenData.StartValueInitialized = true;
                     }
     
-                    global::TweenLib.StandardTweeners.TransformPositionTweener.Tween_Static(
+                    TransformPositionTweener.Tween_Static(
                         ref component
                         , tweenData.TweenTimer.GetNormalizedTime()
                         , tweenData.EasingType
@@ -253,8 +313,8 @@ namespace TweenLib.StandardTweeners
     public partial struct TransformPositionTweener
     {
         [BurstCompile]
-        public struct TweenBuilder
-            : ITweenBuilder<
+        public struct TweenBuilder :
+            ITweenBuilder<
                 float3
                 , Can_TransformPositionTweener_TweenTag
                 , TransformPositionTweener_TweenData>
@@ -270,6 +330,8 @@ namespace TweenLib.StandardTweeners
                     TweenTimer = new()
                     {
                         DurationSeconds = durationSeconds,
+                        LoopCounter = 1,
+                        LoopCountLimit = 1,
                     },
                     Target = target,
                     EasingType = EasingType.Linear,
@@ -289,6 +351,21 @@ namespace TweenLib.StandardTweeners
             public TweenBuilder WithEase(EasingType easingType)
             {
 	            this.tweenData.EasingType = easingType;
+                return this;
+            }
+
+            [BurstCompile]
+            public TweenBuilder WithLoops(LoopType loopType, byte loopCount = byte.MinValue)
+            {
+	            this.tweenData.TweenTimer.LoopCountLimit = loopCount;
+	            this.tweenData.TweenTimer.LoopType = loopType;
+                return this;
+            }
+
+            [BurstCompile]
+            public TweenBuilder WithDelay(float delaySeconds)
+            {
+	            this.tweenData.TweenTimer.DelaySeconds = delaySeconds;
                 return this;
             }
 

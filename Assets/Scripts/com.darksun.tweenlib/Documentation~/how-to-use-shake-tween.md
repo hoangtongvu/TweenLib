@@ -7,10 +7,17 @@ As Shake tweens do not have the `TargetValue` and require additional data like `
 [BurstCompile]
 public partial struct ShakePositionTweener : ITweener<LocalTransform, float3>
 {
-    public float3 GetDefaultStartValue(in LocalTransform componentData)
-    {
-        return componentData.Position;
-    }
+    [BurstCompile]
+    public void GetDefaultStartValue(in LocalTransform componentData, out float3 defaultStartValue)
+        => defaultStartValue = componentData.Position;
+
+    [BurstCompile]
+    public void GetSum(in float3 a, in float3 b, out float3 result)
+        => result = a + b;
+
+    [BurstCompile]
+    public void GetDifference(in float3 a, in float3 b, out float3 result)
+        => result = a - b;
 
     [BurstCompile]
     public void Tween(ref LocalTransform componentData, in float normalizedTime, EasingType easingType, in float3 startValue, in float3 shakeData)
@@ -61,11 +68,12 @@ foreach (var (transformRef, canTweenXTag, tweenDataXRef) in
     
     // Create shake tween just like a normal tween,
     // but use the TargetValue to store Frequency and Intensity,
-    // and without optional attributes as they are not used for shake tween
+    // WithEase() won't work as EasingType is not used for shake tween
     ShakePositionTweener.TweenBuilder
         .Create(
             duration
             , new(frequency, intensity, 0f))
+        .WithDelay(0.2f)
         .Build(ref tweenDataXRef.ValueRW, canTweenXTag);
 
 }
