@@ -11,26 +11,26 @@ To install, paste the following URL into Unity's **Package Manager**:
 1. Open **Package Manager**.
 2. Click the **+** button.
 3. Select **"Add package from git URL..."**.
-4. Enter: `https://github.com/hoangtongvu/com.darksun.tweenlib.git?path=/Assets/Scripts/com.darksun.tweenlib`
+4. Enter: `https://github.com/hoangtongvu/TweenLib.git?path=/Assets/TweenLib`
 
 ## Documentation
 
-- [Sample scene and see tweens in action](Assets/Scripts/com.darksun.tweenlib/Documentation~/see-tweens-in-action.md)
-- [How it works](Assets/Scripts/com.darksun.tweenlib/Documentation~/how-it-works.md)
+- [Sample scene and see tweens in action](Assets/TweenLib/Documentation~/see-tweens-in-action.md)
+- [How it works](Assets/TweenLib/Documentation~/how-it-works.md)
 
 ## How to use
 
-See [how-to-use-shake-tween](Assets/Scripts/com.darksun.tweenlib/Documentation~/how-to-use-shake-tween.md) for Shake tween case.
+See [how-to-use-shake-tween](Assets/TweenLib/Documentation~/how-to-use-shake-tween.md) for Shake tween case.
 
 ### 1. Use predefined Tweener or declare your own
 
-TweenLib provides several ready-to-use Tweeners in the [StandardTweeners](Assets/Scripts/com.darksun.tweenlib/StandardTweeners) assembly:
-- [TransformPositionTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/TransformPositionTweener.cs)
-- [TransformRotationTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/TransformRotationTweener.cs)
-- [ShakePositionTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionTweener.cs)
-- [ShakePositionXTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionXTweener.cs)
-- [ShakePositionXYTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionXYTweener.cs)
-- [ShakePositionXZTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/ShakePositionTweeners/ShakePositionXZTweener.cs)
+TweenLib provides several ready-to-use Tweeners in the [StandardTweeners](Assets/TweenLib/StandardTweeners) assembly:
+- [TransformPositionTweener](Assets/TweenLib/StandardTweeners/TransformPositionTweener.cs)
+- [TransformRotationTweener](Assets/TweenLib/StandardTweeners/TransformRotationTweener.cs)
+- [ShakePositionTweener](Assets/TweenLib/StandardTweeners/ShakePositionTweeners/ShakePositionTweener.cs)
+- [ShakePositionXTweener](Assets/TweenLib/StandardTweeners/ShakePositionTweeners/ShakePositionXTweener.cs)
+- [ShakePositionXYTweener](Assets/TweenLib/StandardTweeners/ShakePositionTweeners/ShakePositionXYTweener.cs)
+- [ShakePositionXZTweener](Assets/TweenLib/StandardTweeners/ShakePositionTweeners/ShakePositionXZTweener.cs)
 - *(More coming soon...)*
 
 Or, you can create your own Tweener with custom logic:
@@ -43,9 +43,9 @@ Or, you can create your own Tweener with custom logic:
     - `GetDefaultStartValue()`: Define `defaultStartValue` in case you don't want to use custom `startValue`.
     - `GetSum()` and `GetDifference()`: Used when your Tween Looping Type is `LoopingType.Incremental`.
     - `Tween()`: This is main tween method.
-- The Tweener must be created inside an assembly that has assembly definition references like ones in [TweenLib.StandardTweeners.asmdef](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/TweenLib.StandardTweeners.asmdef)
+- The Tweener must be created inside an assembly that has assembly definition references like ones in [TweenLib.StandardTweeners.asmdef](Assets/TweenLib/StandardTweeners/TweenLib.StandardTweeners.asmdef)
 
-**A Tweener example** ([TransformPositionTweener](Assets/Scripts/com.darksun.tweenlib/StandardTweeners/TransformPositionTweener.cs)):
+**A Tweener example** ([TransformPositionTweener](Assets/TweenLib/StandardTweeners/TransformPositionTweener.cs)):
 ```cs
 [BurstCompile]
 public partial struct TransformPositionTweener : ITweener<LocalTransform, float3>
@@ -70,7 +70,7 @@ public partial struct TransformPositionTweener : ITweener<LocalTransform, float3
 }
 ```
 
-[TweenHelper](Assets/Scripts/com.darksun.tweenlib/Utilities/Helpers/TweenHelper.cs) supports fast-to-use tween helper methods:
+[TweenHelper](Assets/TweenLib/Utilities/Helpers/TweenHelper.cs) supports fast-to-use tween helper methods:
 - FloatTween()
 - Float2Tween()
 - Float3Tween()
@@ -139,9 +139,9 @@ foreach (var (transformRef, canTweenTag, tweenDataRef) in
 }
 ```
 
-See [EasingType](Assets/Scripts/com.darksun.tweenlib/Utilities/EasingUtilities.cs) in EasingUtilities.cs to see all supported Easing Types.
+See [EasingType](Assets/TweenLib/Utilities/EasingUtilities.cs) in EasingUtilities.cs to see all supported Easing Types.
 
-See [LoopType](Assets/Scripts/com.darksun.tweenlib/Commons/LoopType.cs) to see all supported Looping Types.
+See [LoopType](Assets/TweenLib/Commons/LoopType.cs) to see all supported Looping Types.
 
 ## Word of caution
 
