@@ -1,6 +1,7 @@
 using Components;
 using TweenLib.StandardTweeners;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
@@ -51,6 +52,38 @@ namespace Systems.Initialization
 
                 tweenBuilder
                     .Build(ref tweenDataRef.ValueRW, canTweenTag);
+
+            }
+
+            // Note: Tweens also can be built with Job!
+            //new BuildTweenJob
+            //{
+            //    tweenPositionConfigs = tweenPositionConfigs,
+            //}.ScheduleParallel();
+
+        }
+
+        [WithOptions(EntityQueryOptions.IgnoreComponentEnabledState)]
+        [BurstCompile]
+        private partial struct BuildTweenJob : IJobEntity
+        {
+            [ReadOnly] public TweenPositionConfigs tweenPositionConfigs;
+
+            void Execute(
+                EnabledRefRW<Can_TransformPositionTweener_TweenTag> canTweenTag
+                , ref TransformPositionTweener_TweenData tweenData)
+            {
+                var tweenBuilder = TransformPositionTweener.TweenBuilder
+                    .Create(tweenPositionConfigs.Duration, tweenPositionConfigs.TargetValue)
+                    .WithEase(tweenPositionConfigs.EasingType)
+                    .WithLoops(tweenPositionConfigs.LoopType, tweenPositionConfigs.LoopCount)
+                    .WithDelay(tweenPositionConfigs.DelaySeconds);
+
+                if (tweenPositionConfigs.UseCustomStartValue)
+                    tweenBuilder = tweenBuilder.WithStartValue(tweenPositionConfigs.StartValue);
+
+                tweenBuilder
+                    .Build(ref tweenData, canTweenTag);
 
             }
 
