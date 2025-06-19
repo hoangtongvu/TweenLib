@@ -31,6 +31,8 @@ namespace Systems.Initialization
             var tweenPositionConfigs = SystemAPI.GetSingleton<TweenPositionConfigs>();
             if (tweenPositionConfigs.TweenPositionType != TweenPositionType.XYZ) return;
 
+            UnityEngine.Debug.Log("Create TWEEN");
+
             foreach (var (transformRef, canTweenTag, tweenDataRef) in
                 SystemAPI.Query<
                     RefRO<LocalTransform>
@@ -38,8 +40,6 @@ namespace Systems.Initialization
                     , RefRW<TransformPositionTweener_TweenData>>()
                     .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState))
             {
-                UnityEngine.Debug.Log("Create TWEEN");
-
                 var tweenBuilder = TransformPositionTweener.TweenBuilder
                     .Create(tweenPositionConfigs.Duration, tweenPositionConfigs.TargetValue)
                     .WithEase(tweenPositionConfigs.EasingType)

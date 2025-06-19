@@ -31,6 +31,8 @@ namespace Systems.Initialization.ShakeCreateSystems
             var shakePositionConfigs = SystemAPI.GetSingleton<ShakePositionConfigs>();
             if (shakePositionConfigs.ShakePositionType != ShakePositionType.X) return;
 
+            UnityEngine.Debug.Log("Create SHAKE");
+
             foreach (var (transformRef, canTweenXTag, tweenDataXRef) in
                 SystemAPI.Query<
                     RefRO<LocalTransform>
@@ -38,8 +40,6 @@ namespace Systems.Initialization.ShakeCreateSystems
                     , RefRW<ShakePositionXTweener_TweenData>>()
                     .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState))
             {
-                UnityEngine.Debug.Log("Create SHAKE");
-
                 var tweenBuilder = ShakePositionXTweener.TweenBuilder
                     .Create(
                         shakePositionConfigs.Duration
